@@ -1,0 +1,42 @@
+<script src="js/jquery/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="js/bootstrap/bootstrap.min.js"></script>
+<script src="js/perfect-scrollbar.js"></script>
+
+<script src="js/sweetalert/sweetalert.min.js"></script>
+<script src="js/toastr/toastr.min.js"></script>
+
+<script type="text/javascript" src="js/locale.js?locale_t=68262917"></script>
+
+<script src="js/wss.js?t=20190120"></script>
+<script src="js/contextmenu/jquery.contextMenu.min.js"></script>
+<script src = "js/jquery/ui.js"></script>
+<script src="js/jquery/jqprint-0.3.js"></script>
+<script src="js/templates/tmpl.min.js"></script>
+<script type="text/javascript">
+{if isset($smarty.session.wss_server)}
+	var wss = new WssClient('{$smarty.session.wss_server}');
+	wss.asWeb({$smarty.session.LicenseId}, '{$smarty.session.LicenseUserName}', '{$smarty.session.LicenseUserToken}');
+{/if}
+</script>
+
+<script type="text/javascript">
+var theLangCode = "{if !isset($smarty.session.LicenseLang) or strlen($smarty.session.LicenseLang) == 0}en{else}{$smarty.session.LicenseLang}{/if}";
+$(document).ready(function(){
+	translate_obj($('body'));
+	$('#wrapper').animate({
+		opacity: 1
+	}, 500);
+
+	refresh_session();
+	show_all_unprocessed_client_assist();
+
+	// black theme js
+	$('.dark').click(e => classify($(e.currentTarget), 'show'))
+
+});
+
+//mobile view nav toggle
+var toggle = () => classify('html', 'nav-open')
+
+var classify = (select, class_name) => $(select).hasClass(class_name) ? $(select).removeClass(class_name) : $(select).addClass(class_name)
+</script>

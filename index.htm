@@ -1,0 +1,5715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{include "header.htm" }
+
+</head>
+<body>
+<div id="app">
+	<div id="wrapper">
+		<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only lang">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="main.php"></a>
+			</div>
+
+			{if isset($smarty.session.LicenseICafeName) && isset($smarty.session.LicenseUserName) && isset($smarty.session.LicenseName)}
+			<div class="nav navbar-left hidden-xs">
+				{if isset($smarty.session.LicenseICafeName)} <span class="lang">Hi</span> {$smarty.session.LicenseUserName}, <span class="lang">welcome to</span> {$smarty.session.LicenseICafeName}. ({$smarty.session.LicenseName}){/if}
+
+				<span class="pcs_status lang" style="margin-left:50px;">free:</span> <span class="pcs_status" id="pcs_free"></span> <span class="pcs_status pcs_status_sep">|</span>
+				<span class="pcs_status lang">Busy:</span> <span class="pcs_status" id="pcs_busy"></span> <span class="pcs_status pcs_status_sep">|</span>
+				<span class="pcs_status lang">Off:</span> <span class="pcs_status" id="pcs_off"></span> <span class="pcs_status pcs_status_sep">|</span>
+				<span class="pcs_status lang">Members:</span> <span class="pcs_status" id="pcs_member"></span>
+			</div>
+			{/if}
+
+			<ul class="nav pull-right" style="margin-right:20px;" id="current_cloud_server">
+				<i class="fa fa-globe" style="color:#0c57c4;"></i> <span style="font-size:12px; color:#666666;">{if isset($smarty.session.LicenseServerCode)}{$smarty.session.LicenseServerCode}{/if}</span>
+			</ul>
+
+			<ul class="nav pull-right" style="display: none;" id="server_status">
+				<div id="offline_div" style="display: none; margin-right:20px;">
+					<i class="fa fa-battery-empty animated" style="color:#cccccc"></i> <span style="font-size:12px; color:#666666;">Offline</span>
+				</div>
+				<div id="online_div" style="display: none; margin-right:20px; ">
+					<i class="fa fa-battery-full animated" style="color:#1fc231;" id="connected_icon"></i> <span style="font-size:12px; color:#666666;">Online</span>
+				</div>
+			</ul>
+		</nav>
+
+
+		<!-- 左边的主菜单 -->
+		<div class="navbar-default sidebar" role="navigation">
+			<div class="sidebar-nav navbar-collapse collapse">
+				<ul class="nav" id="side-menu">
+					<li  v-on:click="currentTab = 'computers'" id="top-pc" {if strpos($smarty.server.REQUEST_URI, 'main.php') !== false || strpos($smarty.server.REQUEST_URI, 'checkout.php') !== false}class="active"{/if}>
+					<a >
+						<i class="fa fa-laptop fa-2x"></i> <br/> <span class="lang">Computers</span>
+					</a>
+					</li >
+					<li v-on:click="currentTab = 'members'" id="top-member" {if strpos($smarty.server.REQUEST_URI, 'members.php') !== false}class="active"{/if}>
+					<a >
+						<i class="fa fa-users fa-2x"></i> <br/> <span class="lang">Members</span>
+					</a>
+					</li>
+					<li id="top-shop" {if strpos($smarty.server.REQUEST_URI, 'shop.php') !== false}class="active"{/if}>
+					<a href="shop.php">
+						<span class="badge shop-badge pull-right" style="background:red; position: absolute; right:8px; top:8px; display:none;">5</span>
+						<i class="fa fa-cart-plus fa-2x"></i> <br/> <span class="lang">Shop</span>
+					</a>
+					</li>
+					<li id="top-logs" {if strpos($smarty.server.REQUEST_URI, 'logs') !== false}class="active"{/if}>
+					<a href="logs.php">
+						<i class="fa fa-calendar fa-2x"></i> <br/> <span class="lang">Logs</span>
+					</a>
+					</li>
+					<li id="top-games" {if strpos($smarty.server.REQUEST_URI, 'games.php') !== false && strpos($smarty.server.REQUEST_URI, '-games.php') === false}class="active"{/if}>
+					<a href="games.php">
+						<i class="fa fa-play fa-2x"></i> <br/> <span class="lang">Games</span>
+					</a>
+					</li>
+					<li id="top-pool" {if strpos($smarty.server.REQUEST_URI, 'pools.php') !== false}class="active"{/if}>
+					<a href="pools.php">
+						<i class="fa fa-barcode fa-2x"></i> <br/> <span class="lang">License pool</span>
+					</a>
+					</li>
+					{if $smarty.session.CafeStaffRole == 'admin'}
+					<li id="top-settings" {if strpos($smarty.server.REQUEST_URI, 'settings') !== false}class="active"{/if}>
+					<a href="settings-cafe.php">
+						<i class="fa fa-cog fa-2x"></i> <br/> <span class="lang">Settings</span>
+					</a>
+					</li>
+					{/if}
+					<li id="top-reports" {if strpos($smarty.server.REQUEST_URI, 'reports.php') !== false}class="active"{/if}>
+					<a href="reports.php">
+						<i class="fa fa-pie-chart fa-2x"></i> <br/> <span class="lang">Reports</span>
+					</a>
+					</li>
+					<li {if strpos($smarty.server.REQUEST_URI, 'login.php') !== false}class="active"{/if}>
+					<a data-toggle="modal" data-target=".modalLogout" data-whatever="@mdo">
+						<i class="fa fa-sign-out fa-2x"></i> <br/> <span class="lang">Logout</span>
+					</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Confirm Logout -->
+		<div class="modal fade show modalLogout" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Confirm logout</h4>
+					</div>
+
+					<div class="modal-body lang" style="padding: 20px 70px;">
+						Are you sure you want to log out?
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						{if $smarty.session.CafeStaffRole != 'admin' && strpos($smarty.server.REQUEST_URI, 'login.php') === false}
+						<button type="button" class="btn btn-primary lang" id="submitLogoutend" onclick="javascript:logout_end_shift();">Logout and end shift</button>
+						<button type="button" class="btn btn-primary lang" id="submitLogout" onclick="javascript:logout();">Logout only</button>
+						{else}
+						<button type="button" class="btn btn-primary lang" id="submitLogout" onclick="javascript:logout();">Logout</button>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Confirm Logout -->
+		<!-- End shift -->
+		<div class="modal fade show myModalEndShift" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center lang">Shift summary</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<table class="table table-bordered text-center lang">
+							<tbody>
+							<tr>
+								<th class="lang">Cash balance</th>
+								<td id="user_cash_balance"></td>
+							</tr>
+							<tr>
+								<th class="lang">From</th>
+								<td id="user_from"></td>
+							</tr>
+							<tr>
+								<th class="lang">To</th>
+								<td id="user_to"></td>
+							</tr>
+							<tr>
+								<th class="lang">Total hours</th>
+								<td id="user_total_hours"></td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary lang" data-dismiss="modal" onclick="logout()">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- End shift -->
+
+		<div id="page-wrapper">
+			<component  v-bind:is="currentTabComponent"
+						:tab_areas="tab_areas"
+						:locked="locked"
+						:dragclass="dragclass"
+						:unassigned_boxes="unassigned_boxes"
+						:shift_status="shift_status"
+						:boxes="boxes"
+						:areas="areas"
+						:pc_payment="pc_payment"
+						:pcs_form="pcs_form"
+						:pc_group="pc_group"
+						:pc_group_id="pc_group_id"
+						:pc_group_edit="pc_group_edit"
+						:table_pc="table_pc"
+						:table_device="table_device"
+						:members="members"
+						:license_using_billing="license_using_billing"
+						:guest_members="guest_members"
+						:offers="offers"
+						:member_groups="member_groups"
+						:offer_list="offer_list"
+			></component>
+
+		</div>
+
+		<div id="cover" class="cover">
+			<div class="text-center cover-font">
+				<i class="fa fa-spinner fa-pulse fa-5x"></i>
+			</div>
+		</div>
+
+		<div class="modal fade show modalConfirm" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Confirm</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;"></div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary lang" id="confirm_action" data-action="">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+	</div>
+</div>
+
+
+{include "common-js.htm"}
+
+
+
+<script type="x-template" id="main_app">
+	<div>
+		<div class="row" style="margin-bottom:10px;" id="toolbar_pc">
+			<div class="form-group">
+
+				<div class="col-sm-5 text-left">
+					<ul class="nav nav-tabs">
+						<li class="active width-200 " id="nav-pc"><a href="#"><span class="lang">Computers</span> <span class="badge" id="badge-timeover-pc">15</span></a></li>
+						<li id="nav-device" class="width-200"><a href="#"><span class="lang">Devices</span> <span class="badge" id="badge-timeover-device">15</span></a></li>
+						<li id="nav-layout" class="width-200 lang"><a href="#" class="lang">Layout</a></li>
+					</ul>
+				</div>
+
+				<shift-button :shift_status="shift_status"></shift-button>
+
+				<div class="col-sm-2">
+					<input type="text" class="form-control lang" name="search_text" value="" placeholder="Search...">
+				</div>
+
+				<div id="toolbar" class="col-sm-4">
+					<button class="btn btn-info lang" id="tbar-start-prepaid" disabled><i class="fa fa-2x fa-hourglass-start lang" title="Start pre-paid session"></i></button>
+
+					{if !$disable_postpaid}
+					<button class="btn btn-info lang" id="tbar-start-postpaid" disabled><i class="fa fa-2x fa-hourglass-end lang" title="Start postpaid session"></i></button>
+					{/if}
+
+					<button class="btn btn-info lang" id="tbar-start-offer" disabled><i class="fa fa-2x fa-battery-2 lang" title="Start offer session"></i></button>
+					<button class="btn btn-info lang" id="tbar-add-time" disabled><i class="fa fa-2x fa-clock-o lang" title="Add time"></i></button>
+					<button class="btn btn-info lang" id="tbar-check-out" disabled><i class="fa fa-2x fa-arrow-right lang" title="Check out"></i></button>
+					<button class="btn btn-info lang" id="tbar-cashier-expense"><i class="fa fa-2x fa-dollar lang" title="Cashier expenses"></i></button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="table-responsive" id="tab-pc">
+			<table-pc :table_pc="table_pc"></table-pc>
+		</div>
+
+		<div id="tab-device">
+			<div class="table-responsive">
+				<table-device :table_device="table_device"></table-device>
+			</div>
+			<button class="btn btn-primary" onclick="create_device()"><i class="fa fa-plus"></i></button>
+		</div>
+
+		<!-- Graphical view -->
+
+		<div  id="tab-layout">
+			<div class="result"></div>
+			<br>
+			<br>
+			<div class="row">
+				<div class="col-md-1">
+					<button id="area_add_button" class="btn btn-primary" onclick="add_layout_group()"><span class="fa fa-plus"></span></button>
+				</div>
+				<div class="col-md-11">
+					<area-tabs :tab_areas="tab_areas"></area-tabs>
+				</div>
+			</div>
+			<div class="graph-container no-disable-drag" >
+				<div class="col-md-1">
+					<br>
+					<lock-button :locked="locked" :dragclass="dragclass"></lock-button>
+					<br>
+					<br>
+					<unassigned-area :unassigned_boxes="unassigned_boxes"></unassigned-area>
+				</div>
+				<layout-area :boxes="boxes" :areas="areas"></layout-area>
+			</div>
+		</div>
+		<!-- graphical view -->
+
+
+
+		<!-- Add Time -->
+		<div class="modal fade show myModalAddtime" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Add time </h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<form id="addtimeAjaxForm" class="form-horizontal" enctype="multipart/form-data">
+							<div class="form-group">
+								<div class="col-sm-4">
+									<input type="number" step="1" class="form-control lang" name="pc_cus_time" id="pc_cus_time" placeholder="Custom minute" autocomplete="off">
+								</div>
+								<div class="col-sm-2">
+									<button type="button" class="btn btn-default" id="submit-cus-time">>></button>
+								</div>
+								<div class="col-sm-4">
+									<input type="number" step="0.01" class="form-control lang" name="pc_cus_money" id="pc_cus_money" placeholder="Custom money" autocomplete="off">
+								</div>
+								<div class="col-sm-2">
+									<button type="button" class="btn btn-default" id="submit-cus-money">>></button>
+								</div>
+							</div>
+
+							{foreach $price_buttons as $vo}
+							<div class="form-group">
+								<button type="button" class="btn btn-default btn-time col-sm-6" data-min="{$vo.min}">{$vo.min}min</button>
+								<button type="button" class="btn btn-default btn-money col-sm-6" data-money="{$vo.money}">{$vo.money}$</button>
+							</div>
+							{/foreach}
+
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Add Time -->
+
+		<!-- Pre-paid Session or add time to members, this form is the child form of myModalAddtime -->
+		<div class="modal fade show myModalPrepaid" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Start pre-paid session </h4>
+					</div>
+
+					<form id="prepaidAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(prepaid_session_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<div class="prepaid_pcs"></div>
+							<input type="hidden" name="action" value="ajax_pc_add_time_money">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Computer:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="pre_pc_name" id="pre_pc_name">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Account:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="pre_pc_login_account" id="pre_pc_login_account">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Fee:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="pre_pc_cost" id="pre_pc_cost">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Paid:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="pre_pc_paid" id="pre_pc_paid" autocomplete="off">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Change:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="pre_pc_change" id="pre_pc_change">
+								</div>
+							</div>
+
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-pc-prepaid">Start</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Pre-paid Session -->
+
+		{if !$disable_postpaid}
+		<!-- Postpaid Session -->
+		<div class="modal fade show myModalPostpaid" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Start postpaid session</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<form id="postpaidAjaxForm" class="form-horizontal" enctype="multipart/form-data" onsubmit="return false;">
+							<div class="postpaid_pcs">
+								<pcs-form :pcs_form="pcs_form"></pcs-form>
+							</div>
+							<input type="hidden" class="hidden" name="action" value="ajax_pc_postpaid">
+
+							<div class="form-group lang message"></div>
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary lang" id="submit-pc-postpaid">Start</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Postpaid Session -->
+		{/if}
+		<!-- Create Device -->
+		<div class="modal fade show myModalCreateDevice" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">New device</h4>
+					</div>
+					<form  class="form-horizontal" enctype="multipart/form-data" onsubmit="return create_device_form(this);">
+						<div class="modal-body" style="padding: 20px 70px;">
+
+							<input type="hidden" class="form-control" name="action" value="ajax_device_create">
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Device name:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="pc_name" autocomplete="off">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Description:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="pc_comment" autocomplete="off">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group:</label>
+								<div class="col-sm-8">
+									<group-select :pc_group="pc_group_edit"></group-select>
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary lang">Done</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Create Device -->
+
+		<!-- Checkout -->
+		<div class="modal fade show myModalCheckout" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Checkout </h4>
+					</div>
+
+					<form id="checkoutAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(check_out_post);">
+						<div class="modal-body" style="padding: 20px;">
+							<input type="hidden" class="hidden" name="action" value="ajax_pc_checkout">
+							<div class="row">
+								<div class="col-md-12">
+
+									<div class="panel panel-default">
+										<div class="panel-heading lang">Usage</div>
+										<div class="panel-body" style="overflow-y: auto; height:150px; max-height:150px; padding:0;">
+											<checkout-table :pc_payment="pc_payment"></checkout-table>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12">
+									<table class="table total-table">
+										<tr>
+											<th class="lang">Total cost:</th>
+											<td id="total_cost"></td>
+										</tr>
+										<tr>
+											<th class="lang">Balance:</th>
+											<td id="total_balance"></td>
+										</tr>
+										<tr>
+											<th class="lang">Balance bonus:</th>
+											<td id="total_balance_bonus"></td>
+										</tr>
+										<tr id="paid_tr">
+											<th class="lang">Paid:</th>
+											<td>
+												<input type="number" step="0.01" class="form-control" name="paid" style="max-width:200px;" id="check_paid" autocomplete="off">
+											</td>
+										</tr>
+										<tr>
+											<th class="lang">Change:</th>
+											<td id="total_change"></td>
+										</tr>
+									</table>
+								</div>
+							</div>
+
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-pc-checkout">Checkout</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Checkout -->
+
+		<!-- Confirm Delete -->
+		<div class="modal fade show myModalDelete" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Confirm delete</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<form id="deleteAjaxForm" class="form-horizontal" enctype="multipart/form-data">
+							<div class="delete_pcs">
+								<pcs-form :pcs_form="pcs_form"></pcs-form>>
+							</div>
+							<input type="hidden" class="hidden" name="action" value="ajax_pc_delete">
+
+							<div class="form-group lang message"></div>
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary lang" id="submit-pc-delete">Delete</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Confirm Delete -->
+
+		<!-- Edit PC -->
+		<div class="modal fade show myModalEdit" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Edit PC information</h4>
+					</div>
+
+					<form id="editAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(pc_edit_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="text" class="hidden" name="pcedit" id="pcedit">
+							<input type="hidden" class="hidden" name="action" value="ajax_pc_edit">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Computer:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="edit_pc_name" id="edit_pc_name" disabled="disabled">
+								</div>
+							</div>
+
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group:</label>
+								<div class="col-sm-8">
+									<groupselect :pc_group="pc_group" :pc_group_id="pc_group_id"></groupselect>
+									<input type="hidden" name="edit_group_name" id="edit_pc_group_name">
+								</div>
+							</div>
+							{else}
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="edit_group_name" id="edit_pc_group_name" disabled="disabled">
+								</div>
+							</div>
+							{/if}
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Comment:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="edit_pc_comment" id="edit_pc_comment" autocomplete="off">
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-pc-edit">OK</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Confirm Delete -->
+
+
+		<!-- Move Session -->
+		<div class="modal fade show myModalMove" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Move session</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<form id="moveAjaxForm" class="form-horizontal" enctype="multipart/form-data">
+							<input type="text" class="hidden" name="pc_name">
+							<input type="hidden" class="hidden" name="action" value="ajax_pc_move">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">From PC:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="move_from" id="move_from" disabled="disabled">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Move to:</label>
+								<div class="col-sm-8">
+									<select name="move_to" class="form-control" id="move_to"></select>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary lang" id="submit-pc-move">Move</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Transfer PC -->
+
+
+		<!-- Shop client call -->
+		<div class="modal fade show myModalShop" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog" style="max-height:650px; width:90%;">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center">Shop</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 10px;">
+
+						<div class="embed-responsive" style="min-height:450px;">
+							<iframe class="embed-responsive-item" src="" id="shop_frame"></iframe>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<!-- End Shop client call -->
+
+		<!-- Send admin message -->
+		<div class="modal fade show myModalAdminMessage" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Send message</h4>
+					</div>
+					<form  class="form-horizontal" enctype="multipart/form-data" onsubmit="return admin_message(this);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Message:</label>
+								<div class="col-sm-8">
+									<textarea  class="form-control" name="message" ></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary lang">Send</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- Send admin message -->
+
+		<!-- End shift confirm -->
+		<div class="modal fade show myModalEndShiftConfirm" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center lang">Confirm</h4>
+					</div>
+					<div class="modal-body lang" style="padding: 20px 70px;">
+						Are you sure you want to end shift?
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">No</button>
+						<button type="button" class="btn btn-primary lang" data-dismiss="modal" onclick="set_shift_status(1)">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- End shift confirm -->
+		<!-- Delete area confirm -->
+		<div class="modal fade show myModalDeleteAreaConfirm" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center lang">Confirm</h4>
+					</div>
+					<div class="modal-body lang" style="padding: 20px 70px;">
+						Are you sure you want to delete area?
+					</div>
+					<input name="tab" type="hidden">
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">No</button>
+						<button type="button" class="btn btn-primary lang" data-dismiss="modal" onclick="delete_area()">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Delete area confirm -->
+
+		<!-- Change tabs confirm -->
+		<div class="modal fade show myModalChangeTab" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center lang">Confirm</h4>
+					</div>
+					<div class="modal-body lang" style="padding: 20px 70px;">
+						You have unsaved layout, leave or not?
+					</div>
+					<input name="tab" type="hidden">
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">No</button>
+						<button type="button" class="btn btn-primary lang" data-dismiss="modal" onclick="tab_change()">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Change tabs confirm -->
+
+		<!-- Start shift tip -->
+		<div class="modal fade show myModalShiftTip" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center lang">Start shift</h4>
+					</div>
+					<div class="modal-body lang" style="padding: 20px 70px;">
+						Do you want to start your shift now?
+					</div>
+					<input name="tab" type="hidden">
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">No</button>
+						<button type="button" class="btn btn-primary lang" data-dismiss="modal" onclick="set_shift_status(0)">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Start shift tip -->
+
+		<!-- Offer Session -->
+		<div class="modal fade show myModalAddOffer" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitleAddOffer">Add offer</h4>
+					</div>
+
+					<form id="addofferAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(addoffer_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<div class="offer_pcs"></div>
+							<input type="hidden" name="action" value="ajax_pc_add_offer">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Computer:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="pc_name" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer:</label>
+								<div class="col-sm-8">
+									<select name="offer_id" class="form-control"></select>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer description:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="offer_description" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer mins:</label>
+								<div class="col-sm-8">
+									<input type="number" step="1" class="form-control" name="offer_mins" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer price:</label>
+								<div class="col-sm-8">
+									<input type="number" class="form-control" name="offer_price" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Cost:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_cost" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Paid:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_paid" id="offer_paid" autocomplete="off">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Change:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_change" disabled>
+								</div>
+							</div>
+
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-pc-offer">Pay</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Offer Session -->
+
+		<!-- Cashier expense -->
+		<div class="modal fade show myModalExpense" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Cashier expenses</h4>
+					</div>
+
+					<form id="expenseAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(cashier_expense_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="hidden" name="action" value="ajax_cashier_expense">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Expense amount:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="balance" id="expense_balance" autocomplete="off">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Description:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="description" autocomplete="off">
+								</div>
+							</div>
+
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Cashier expense -->
+
+		<!-- Add group layout -->
+		<div class="modal fade show myModalLayoutGroup" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Add area</h4>
+					</div>
+					<form  class="form-horizontal" enctype="multipart/form-data" onsubmit="return create_area(this);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="hidden" class="form-control" name="action" value="ajax_area_create">
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Area name</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="area_name" autocomplete="off">
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary lang">Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- Add Layout Group -->
+	</div>
+</script>
+
+<script type="x-template" id="members_app">
+	<div>
+		<ul id="tabs" class="nav nav-tabs" style="margin-bottom:15px;">
+			<li role="presentation" data-code="member" class="active">
+				<a class="lang" href="javascript:switch_tab('member')">Members</a>
+			</li>
+
+			<li role="presentation" data-code="guest" >
+				<a class="lang" href="javascript:switch_tab('guest')">Guests</a>
+			</li>
+		</ul>
+
+		<div class="member_div">
+
+			<div class="container-fluid" style="margin-bottom:10px;">
+				<div class="form-group">
+					<div class="col-sm-8">
+						<span><b class="lang" style="font-size:20px">Members</b> <span id="total_nums"></span></span>
+						<a class="btn btn-primary add-member" style="cursor:pointer"><i class="fa fa-plus" title="Add member"></i></a>
+					</div>
+
+					<div class="col-sm-4">
+						<form id="search-member-form" method="get" onsubmit="return search_member_post();">
+							<div class="input-group">
+								<input type="text" class="form-control lang" name="search_text" value="" placeholder="Search...">
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<members-table :members="members" :license_using_billing="license_using_billing" id="members"></members-table>
+
+			<div class="row text-center">
+				<ul class="pagination member-pagination" style="margin:0 2px; text-align:center;">
+				</ul>
+			</div>
+
+		</div>
+		<div class="guest_div">
+
+			<div class="container-fluid" style="margin-bottom:10px;">
+				<div class="form-group">
+					<div class="col-sm-8">
+						<span><b class="lang" style="font-size:20px">Guests</b> <span id="total_guest_nums"></span></span>
+						<a class="btn btn-primary add-guest"><i class="fa fa-plus" title="Add guest"></i></a>
+					</div>
+
+					<div class="col-sm-4">
+						<form id="search-guest-form" method="get" onsubmit="return search_guest_post();">
+							<div class="input-group">
+								<input type="text" class="form-control lang" name="search_guest_text" value="" placeholder="Search...">
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<guests-table :guest_members="guest_members" :license_using_billing="license_using_billing" id="guests"></guests-table>
+
+			<div class="row text-center">
+				<ul class="pagination guest-pagination" style="margin:0 2px; text-align:center;">
+				</ul>
+			</div>
+
+		</div>
+
+
+		<!-- View Print Guest -->
+		<div class="modal fade show myModalViewGuest" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close noprint" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Guest</h4>
+					</div>
+
+					<form id="viewGuestAjaxForm" class="form-horizontal" method="post" onsubmit="return false;">
+						<div class="modal-body" style="padding: 20px;">
+
+							<h4 style="text-align:center;">{$smarty.session.LicenseICafeName}</h4>
+
+							<table style="width:100%;">
+								<tr>
+									<th class="lang" style="width:50%; text-align:right; padding:8px;">Account:</th>
+									<th id="guest_preview_account" style="width:50%; text-align:left; padding:8px;"></th>
+								</tr>
+								<tr>
+									<th class="lang" style="width:50%; text-align:right; padding:8px;">Password:</th>
+									<th id="guest_preview_password" style="width:50%; text-align:left; padding:8px;"></th>
+								</tr>
+								<tr>
+									<th class="lang" style="width:50%; text-align:right; padding:8px;">Expire time:</th>
+									<th id="guest_preview_expire_time" style="width:50%; text-align:left; padding:8px;"></th>
+								</tr>
+								<tr>
+									<th class="lang" style="width:50%; text-align:right; padding:8px;">Balance:</th>
+									<th id="guest_preview_balance" style="width:50%; text-align:left; padding:8px;"></th>
+								</tr>
+							</table>
+						</div>
+
+						<div class="modal-footer noprint">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" onclick="javascript:preview_guest()">Print</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Print Guest -->
+
+		<!-- View OR Edit Member -->
+		<div class="modal fade show myModalViewMember" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+								aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Member </h4>
+					</div>
+
+					<form id="memberAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(member_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="text" class="hidden" name="member_id" id="member_id">
+							<input type="hidden" class="hidden" name="action" value="ajax_update_member">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label"></label>
+								<label class="col-sm-8">
+									<input type="checkbox" name="member_is_active" id="member_is_active"> <span class="lang">Active</span>
+								</label>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Account:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_account" id="member_account">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">New password:</label>
+								<div class="col-sm-8">
+									<input type="password" class="form-control" name="member_password" id="member_password">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Confirm password:</label>
+								<div class="col-sm-8">
+									<input type="password" class="form-control" name="member_confirm" id="member_confirm">
+								</div>
+							</div>
+
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group name:</label>
+								<div class="col-sm-8">
+									<member-group-options :member_groups="member_groups"></member-group-options>
+								</div>
+							</div>
+							{else}
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group name:</label>
+								<div class="col-sm-8">
+									<input name="member_group_name" id="member_group_name" class="form-control" disabled>
+								</div>
+							</div>
+							{/if}
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">First name:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_first_name" id="member_first_name">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Last name:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_last_name" id="member_last_name">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Birthday:</label>
+								<div class="col-sm-8">
+									<input type="date" class="form-control" name="member_birthday" id="member_birthday">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Expire time:</label>
+								<div class="col-sm-8">
+									<input type="date" class="form-control" name="member_expire_time"
+										   id="member_expire_time">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Phone:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_phone" id="member_phone">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Email:</label>
+								<div class="col-sm-8">
+									<input type="eml" class="form-control" name="member_email" id="member_email">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Id card:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_id_card" id="member_id_card">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Comments:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_comments" id="member_comments">
+								</div>
+							</div>
+
+							<div class="form-group" id="balance_group">
+								<label class="col-sm-4 control-label lang">Balance:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="member_balance">
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-update-member">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End View OR Edit Member -->
+
+		<!-- Topup Member -->
+		<div class="modal fade show myModalTopup" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+								aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Topup </h4>
+					</div>
+
+					<form id="topupAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(topup_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="hidden" name="topup_id" id="topup_id">
+							<input type="hidden" name="action" value="ajax_topup_member">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Account:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="topup_account" id="topup_account">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Balance:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="topup_balance" id="topup_balance">
+								</div>
+							</div>
+
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Topup:</label>
+								<div class="col-sm-8">
+									<input autocomplete="off" type="number" step="0.01" class="form-control" name="topup_value" id="topup_value">
+								</div>
+							</div>
+							<div class="form-group" id="topup-bonus-group">
+								<label class="col-sm-4 control-label lang">Bonus:</label>
+								<div class="col-sm-8">
+									<input autocomplete="off" type="number" step="0.01" class="form-control" name="topup_balance_bonus" id="topup_balance_bonus"
+										   {if $smarty.session.CafeStaffRole != 'admin'} disabled {/if} >
+								</div>
+							</div>
+
+							{if $smarty.session.CafeStaffRole == 'admin' && $point_enable}
+							<div class="form-group" id="topup_add_point_div">
+								<label class="col-sm-4 control-label lang">Add points:</label>
+								<div class="col-sm-8">
+									<input autocomplete="off" type="number" step="0.01" class="form-control" name="add_point" id="add_point">
+								</div>
+							</div>
+							{/if}
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Comment:</label>
+								<div class="col-sm-8">
+									<input autocomplete="off" type="text" class="form-control" name="comment" id="comment">
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-topup-member">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Topup Member -->
+
+		<!-- Confirm Delete -->
+		<div class="modal fade show myModalDelete" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+								aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitle">Confirm delete</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 20px 70px;">
+						<form id="deleteAjaxForm" class="form-horizontal" enctype="multipart/form-data">
+							<input type="text" class="hidden" name="member_id" id="delete_id">
+							<input type="hidden" class="hidden" name="action" value="ajax_delete_member">
+
+							<div class="form-group lang">
+								Are you sure you want to delete this account?
+							</div>
+						</form>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary lang" id="submit-delete-member">Delete</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Confirm Delete -->
+
+		<!-- Offer Session -->
+		<div class="modal fade show myModalAddOffer" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitleAddOffer">Add offer</h4>
+					</div>
+
+					<form id="addofferAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(addoffer_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="hidden" name="action" value="ajax_member_add_offer">
+							<input type="hidden" name="member_id" value="" >
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Member:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="member_name" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer:</label>
+								<div class="col-sm-8">
+									<offer-options :offers="offers"></offer-options>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer description:</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="offer_description" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer minutes:</label>
+								<div class="col-sm-8">
+									<input type="number" step="1" class="form-control" name="offer_mins" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Offer price:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_price" disabled>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Cost:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_cost_show" disabled>
+									<input type="hidden" name="offer_cost" value="" >
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Paid:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_paid" id="offer_paid">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Change:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="offer_change" disabled>
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-member-offer-checkout">Checkout</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Offer Session -->
+
+		<!-- Show Offers Session -->
+		<div class="modal fade show myModalOffers" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog" style="min-width: 900px">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang" id="CouponTitleShowOffers">Offers</h4>
+					</div>
+
+					<div class="modal-body table-responsive" style="padding: 10px; overflow-y: auto; max-height:300px;">
+						<offers-table :offer_list="offer_list" :user_role="user_role"></offers-table>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Show Offers Session -->
+
+		<!-- View OR Edit Guest -->
+		<div class="modal fade show myModalGuest" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center lang">Guest</h4>
+					</div>
+
+					<form id="guestAjaxForm" class="form-horizontal" method="post" onsubmit="return delay_execute(guest_post);">
+						<div class="modal-body" style="padding: 20px 70px;">
+							<input type="hidden" name="member_id">
+							<input type="hidden" name="action" value="ajax_add_guest">
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Group name:</label>
+								<div class="col-sm-8">
+									<input name="member_group_name" class="form-control lang" readonly="readonly" value="Guest">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Expire time:</label><!-- <lang>Expire time:</lang>-->
+								<div class="col-sm-8">
+									<input type="date" class="form-control" name="member_expire_time" value="{$default_guest_expire_time}">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label lang">Balance:</label>
+								<div class="col-sm-8">
+									<input type="number" step="0.01" class="form-control" name="member_balance" id="guest_balance">
+								</div>
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default lang" data-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-primary lang" id="submit-add-guest">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End View OR Edit Guest -->
+
+		<!-- Shop client call -->
+		<div class="modal fade show myModalShop" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+			<div class="modal-dialog" style="max-height:650px; width:90%;">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title text-center">Shop</h4>
+					</div>
+
+					<div class="modal-body" style="padding: 10px;">
+
+						<div class="embed-responsive" style="min-height:450px;">
+							<iframe class="embed-responsive-item" src="" id="shop_frame"></iframe>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<!-- End Shop client call -->
+
+		<div id="cover" class="cover">
+			<div class="text-center cover-font">
+				<i class="fa fa-spinner fa-pulse fa-5x"></i>
+			</div>
+		</div>
+	</div>
+</script>
+
+{literal}
+<script type="x-template" id="tmpl-area-tabs">
+	<ul class="nav nav-tabs">
+		<li class="active area-nav-tab width-200" data-tab="all"><a href="#">All</a></li>
+		<li v-for="area in tab_areas" class="area-nav-tab width-200" :data-tab="area.area_name"><a href="#">{{area.area_name}}<span id="area_delete_button" :data-tab="area.area_name" onclick="confirm_delete_area(this)" class="area-delete" >&times;</span></a></li>
+	</ul>
+</script>
+
+<script type="x-template" id="tmpl-lock-button">
+	<div id="lock-button-div">
+		<button id="lock-button" onclick="on_lock(this)" :data-locked="locked" :class="locked?'btn btn-default':'btn btn-success'">
+			<span :class="dragclass"></span>
+		</button>
+	</div>
+</script>
+
+<script type="x-template" id="tmpl-shift-button">
+	<div class="col-sm-1">
+		<button v-if="shift_status == 0" class="btn btn-success" onclick="set_shift_status(0)">{{translate_string("Start shift")}}</button>
+		<button v-if="shift_status == 1" class="btn btn-danger" onclick="$('.myModalEndShiftConfirm').modal('show')">{{translate_string("End shift")}}</button>
+	</div>
+</script>
+
+<script type="x-template" id="tmpl-unassigned">
+	<div id="unassigned" data-area=0 >
+		<div v-for="box in unassigned_boxes" v-if="box.pc_area_name == 0" class="box"
+			 data-state="unassigned"
+			 :data-pc_area_name="box.pc_area_name"
+			 :style="`position:${box.pc_box_position};top:${box.pc_box_top}px;left:${box.pc_box_left}px;background-color:${box.pc_name_color};`"
+			 :data-pc_mac="box.pc_mac"
+			 :data-pc_status_text="box.pc_status_text"
+			 :data-pc_enabled="box.pc_enabled"
+			 :data-member_account="box.member_account"
+			 :data-member_group_name="box.member_group_name"
+			 :data-pc_name="box.pc_name"
+			 :data-is_console="box.is_console">
+			{{box_name(box.pc_name)}}
+		</div>
+	</div>
+</script>
+
+<script type="x-template" id="tmpl-area">
+	<div class="col-md-11">
+		<div v-for="area in areas" class="drag-area" :data-area_name="area.area_name" :style="`width: ${area.area_width}px; height: ${area.area_height}px;`">
+			<div class="area">{{area.area_name}}</div>
+			<div v-for="box in boxes" v-if="box.pc_area_name.toString().toLowerCase() == area.area_name.toString().toLowerCase()" class="box"
+				 data-state="unassigned"
+				 :data-pc_area_name="box.pc_area_name"
+				 :style="`position:${box.pc_box_position};top:${box.pc_box_top}px;left:${box.pc_box_left}px;background-color:${box.pc_name_color};`"
+				 :data-pc_mac="box.pc_mac"
+				 :data-pc_status_text="box.pc_status_text"
+				 :data-pc_enabled="box.pc_enabled"
+				 :data-member_account="box.member_account"
+				 :data-member_group_name="box.member_group_name"
+				 :data-pc_name="box.pc_name"
+				 :data-is_console="box.is_console">
+				{{box_name(box.pc_name)}}
+			</div>
+		</div>
+	</div>
+</script>
+
+<script type="x-template" id="tmpl-pcs-payment">
+	<!-- // here maybe have 1000 parameters problem -->
+	<table class="table table-striped table-pcs">
+		<thead>
+		<tr>
+			<th class="lang">PC</th>
+			<th class="lang">Account</th>
+			<th class="lang">PC group</th>
+			<th class="lang">Start time</th>
+			<th class="lang">Cost</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="payment in pc_payment">
+			<td>{{payment.pc_name}}</td>
+			<td>{{payment.member_account}} [{{payment.member_group_name}}]</td>
+			<td>{{payment.pc_group_name}}</td>
+			<td>{{payment.status_connect_time_local}}</td>
+			<td>
+				{{payment.pc_cost}}
+				<input type="hidden" name="pc_name[]" :value="payment.pc_name">
+				<input type="hidden" name="pc_group_id[]" :value="payment.pc_group_id">
+				<input type="hidden" name="member_account[]" :value="payment.member_account">
+				<input type="hidden" name="member_group_id[]" :value="payment.member_group_id">
+				<input type="hidden" name="pc_cost[]" :value="payment.pc_cost">
+				<input type="hidden" name="pc_data[]" :value="payment.pc_data">
+				<input type="hidden" name="pc_data_verify[]" :value="payment.pc_data_verify">
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+<script type="x-template" id="tmpl-pcs-form">
+	<div>
+		<input v-for="pc in pcs_form" type="hidden" name="pcs[]" value="pc.pc_name">
+	</div>
+</script>
+
+<script type="x-template" id="tmpl-pc-groups">
+	<select class="form-control" name="edit_pc_group_id" :pc_group_id="pc_group_id">
+		<option v-for="pc in pc_group" :value="pc.pc_group_id">{{pc.pc_group_name}}</option>
+	</select>
+</script>
+
+<script type="x-template" id="tmpl-pc-groups-edit">
+	<select class="form-control" name="pc_group_id">
+		<option v-for="pc in pc_group_edit" :value="pc.pc_group_id">{{pc.pc_group_name}}</option>
+	</select>
+</script>
+
+<script type="x-template" id="tmpl-table-pc">
+	<table class="table table-striped table-hover table-condensed" id="table-pc">
+		<thead>
+		<tr>
+			<th class="check"><i class="fa fa-check-square-o fa-2x lang" id="select-all-pc" title="Select all"></i></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_name');">Name</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_status_text');">Status</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_local');">Start time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_duration');">Online time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_left');">Time left</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('member_balance');">Paid</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_disconnect_time_local');">End time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_comment');">Comment</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('member_account');">Account</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('offer_in_using');">Active offer</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_group_name');">PC group</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_ip');">IP address</a></th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="pc in table_pc" :data-pc_name="pc.pc_name" :data-pc_mac="pc.pc_mac" :data-pc_enabled="pc.pc_enabled" :data-is_console="pc.is_console" :data-pc_status_text="pc.pc_status_text" :data-member_account="pc.member_account" :data-member_group_name="pc.member_group_name" :class="pc.pc_is_selected?'selected'+(pc.member_id > 0 ? 'success':''):(pc.member_id > 0 ? 'success':'')">
+			<td v-if="pc.pc_is_selected" class="check"><i class="fa fa-check-square-o"></i></td>
+			<td v-if="!pc.pc_is_selected" class="check"><i class="fa fa-square-o"></i></td>
+			<td>
+				<div class="ellipsiss" title="pc.pc_name">
+					<img :style="`background: ${pc.pc_name_color}; width: 20px; height: 20px;`"> {{pc.pc_name}}
+				</div>
+			</td>
+			<td class="statusTd">
+				<div class="ellipsiss" :title="pc.pc_status_text">
+					{{translate_string(pc.pc_status_text)}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.status_connect_time_local">
+					{{pc.status_connect_time_local}}
+				</div>
+			</td>
+			<td class="onlineTd">
+				<div class="ellipsiss" :title="pc.status_connect_time_duration">
+					{{pc.status_connect_time_duration}}
+				</div>
+			</td>
+			<td class="leftTd">
+				<div class="ellipsiss" :title="pc.status_connect_time_left">
+					{{pc.status_connect_time_left}}
+				</div>
+			</td>
+			<td>
+				<div v-if="pc.member_group_name != null && pc.member_group_name.toLowerCase() != 'postpaid'" class="ellipsiss" :title="pc.member_balance">
+					{{pc.member_balance}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.status_disconnect_time_local">
+					{{pc.status_disconnect_time_local}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_comment">
+					{{pc.pc_comment}}
+				</div>
+			</td>
+			<td>
+				<div v-if="pc.member_account != null" class="ellipsiss" :title="pc.member_account">
+					{{pc.member_account}}
+					[{{pc.member_group_name}}]
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.offer_in_using">
+					{{pc.offer_in_using}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_group_name">
+					{{pc.pc_group_name}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_ip">
+					{{pc.pc_ip}}
+				</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+<script type="x-template" id="tmpl-table-device">
+	<table class="table table-striped table-hover table-condensed" id="table-device">
+		<thead>
+		<tr>
+			<th class="check"><i class="fa fa-square-o" id="select-all-device" title="Select all"></i></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_name');">Name</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_status_text');">Status</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_local');">Start time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_duration');">Online time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_connect_time_left');">Time left</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('member_balance');">Paid</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('status_disconnect_time_local');">End time</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_comment');">Comment</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('member_account');">Account</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('offer_in_using');">Active offer</a></th>
+			<th><a class="lang ellipsiss" href="javascript:sort_col('pc_group_name');">PC group</a></th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="pc in table_device" :data-pc_name="pc.pc_name" :data-pc_mac="pc.pc_mac" :data-pc_enabled="pc.pc_enabled" :data-is_console="pc.is_console" :data-pc_status_text="pc.pc_status_text" :data-member_account="pc.member_account" :data-member_group_name="pc.member_group_name" :class="pc.pc_is_selected?'selected'+(pc.member_id > 0 ? 'success':''):(pc.member_id > 0 ? 'success':'')">
+			<td v-if="pc.selected" class="check"><i class="fa fa-check-square-o"></i></td>
+			<td v-if="!pc.selected" class="check"><i class="fa fa-square-o"></i></td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_name">
+					<img :style="`background: ${pc.pc_name_color}; width: 20px; height: 20px;`"> {{pc.pc_name}}
+				</div>
+			</td>
+			<td class="statusTd">
+				<div class="ellipsiss" :title="pc.pc_status_text">
+					{{translate_string(pc.pc_status_text)}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.status_connect_time_local">
+					{{pc.status_connect_time_local}}
+				</div>
+			</td>
+			<td class="onlineTd">
+				<div class="ellipsiss" :title="pc.status_connect_time_duration">
+					{{pc.status_connect_time_duration}}
+				</div>
+			</td>
+			<td class="leftTd">
+				<div class="ellipsiss" :title="pc.status_connect_time_left">
+					{{pc.status_connect_time_left}}
+				</div>
+			</td>
+			<td>
+				<div v-if="pc.member_group_name != null && pc.member_group_name.toLowerCase() != 'postpaid'" class="ellipsiss" :title="pc.member_balance">
+					{{pc.member_balance}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.status_disconnect_time_local">
+					{{pc.status_disconnect_time_local}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_comment">
+					{{pc.pc_comment}}
+				</div>
+			</td>
+			<td>
+				<div v-if="pc.member_account" class="ellipsiss" :title="pc.member_account">
+					{{pc.member_account}}
+					[{{pc.member_group_name}}]
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.offer_in_using">
+					{{pc.offer_in_using}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="pc.pc_group_name">
+					{{pc.pc_group_name}}
+				</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/x-tmpl" id="tmpl-pagination">
+
+	<li><a href="javascript:page_first()">&laquo;</a></li>
+	<li><a href="javascript:page_previous()">&lsaquo;</a></li>
+
+	{% for (var i=o.paging_info.page_start; i<=o.paging_info.page_end; i++) { %}
+		<li {% if (i == o.paging_info.page) { %}class="active"{% } %}><a href="javascript:page_go({%=i%})">{%=i%}</a></li>
+	{% } %}
+
+	<li><a href="javascript:page_next()">&rsaquo;</a></li>
+	<li><a href="javascript:page_last()">&raquo;</a></li>
+</script>
+
+<script type="text/x-tmpl" id="tmpl-guest-pagination">
+
+	<li><a href="javascript:guest_page_first()">&laquo;</a></li>
+	<li><a href="javascript:guest_page_previous()">&lsaquo;</a></li>
+
+	{% for (var i=o.paging_info.page_start; i<=o.paging_info.page_end; i++) { %}
+		<li {% if (i == o.paging_info.page) { %}class="active"{% } %}><a href="javascript:guest_page_go({%=i%})">{%=i%}</a></li>
+	{% } %}
+
+	<li><a href="javascript:guest_page_next()">&rsaquo;</a></li>
+	<li><a href="javascript:guest_page_last()">&raquo;</a></li>
+</script>
+
+<script type="x-template" id="tmpl-offer-table">
+	<table class="table" id="offer_list">
+		<thead>
+		<tr>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Offer name</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Minutes</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Left minutes</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Priority</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Week days</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Time</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Order time</a>
+				</div>
+			</th>
+			<th>
+				<div>
+					<a class="lang" style="white-space: nowrap; display: inline;">Expired</a>
+				</div>
+			</th>
+			<th>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="offer in offer_list.offers" class="offer.offer_is_expired?`bg-warning`:``">
+			<td>
+				{{offer.product_name}}
+			</td>
+			<td>
+				{{offer.product_mins}}
+			</td>
+			<td>
+				<span v-if="offer.offer_left_seconds == 0">{{offer.product_mins}}</span>
+				<span v-if="offer.offer_left_seconds != 0">{{(offer.offer_left_seconds/60).toFixed(0)}}</span>
+			</td>
+			<td>
+				<span v-if="offer.product_priority == 5">{{translate_string("Highest")}}</span>
+				<span v-if="offer.product_priority == 4">{{translate_string("High")}}</span>
+				<span v-if="offer.product_priority == 3">{{translate_string("Normal")}}</span>
+				<span v-if="offer.product_priority == 2">{{translate_string("Low")}}</span>
+				<span v-if="offer.product_priority == 1">{{translate_string("Lowest")}}</span>
+			</td>
+			<td>{{offer.product_enable_weekday}}</td>
+			<td>
+				<div v-if="offer.product_enable_time == '00:00-00:00'" class="ellipsiss" :title="translate_string('All time')">
+					{{translate_string("All time")}}
+				</div>
+				<div v-if="offer.product_enable_time == '00:00-00:00'" class="ellipsiss" :title="offer.product_enable_time">
+					{{offer.product_enable_time}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss" :title="offer.offer_create_time_local">
+					{{offer.offer_create_time_local}}
+				</div>
+			</td>
+			<td>
+				<div class="ellipsiss">
+					<span v-if="offer.offer_is_expired">{{translate_string("Yes")}}</span>
+					<span v-if="!offer.offer_is_expired">{{translate_string("No")}}</span>
+				</div>
+			</td>
+			<td>
+				<button v-if="user_role == 'admin'" class="btn btn-xs btn-danger" :onclick="`javascript:delete_offer(${offer.id})`"><i class="fa fa-remove" title="Delete"></i></button>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+<script type="x-template" id="tmpl-members-table">
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+		<tr>
+			<th>
+				<div title="Account" class="ellipsiss">
+					<a href="javascript:sort_col('member_account')" class="lang">Account</a>
+				</div>
+			</th>
+
+			<th v-if="license_using_billing">
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_balance')" class="lang">Balance</a>
+				</div>
+			</th>
+			<th v-if="license_using_billing">
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_balance_bonus')" class="lang">Bonus</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_group_name')" class="lang">Group</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_first_name')" class="lang">First name</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_last_name')" class="lang">Last name</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_expire_time')" class="lang">Expire date</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_is_logined')" class="lang">Login status</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_is_active')" class="lang">Account status</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('offers')" class="lang">Offers</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_points')" class="lang">Points</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:sort_col('member_phone')" class="lang">Phone</a>
+				</div>
+			</th>
+
+			<th>
+				<div class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_comments')" class="lang">Comments</a>
+				</div>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="member in members" class="memberItem" :data-member_id="member.member_id" :data-member_account="member.member_account" :data-member_group_id="member.member_group_id">
+			<td>
+				<div class="ellipsiss width-100" :title="member.member_account">
+					<a class="view-member" style="cursor:pointer">{{member.member_account}}</a>
+					<span class="hidden member_id">{{member.member_id}}</span>
+					<span class="hidden member_group_id">{{member.member_group_id}}</span>
+				</div>
+			</td>
+
+
+			<td v-if="license_using_billing">
+				<div :title="member.member_balance" class="ellipsiss">{{member.member_balance}}</div>
+			</td>
+			<td v-if="license_using_billing">
+				<div :title="member.member_balance_bonus" class="ellipsiss">{{member.member_balance_bonus}}</div>
+			</td>
+
+			<td>
+				<div :title="member.member_group_name" class="ellipsiss">{{member.member_group_name}}</div>
+			</td>
+
+			<td>
+				<div v-if="member.member_group_name.toLowerCase() != 'guest'" :title="member.member_first_name" class="ellipsiss">
+					{{member.member_first_name}}
+				</div>
+			</td>
+
+			<td>
+				<div v-if="member.member_group_name.toLowerCase() != 'guest'" :title="member.member_last_name" class="ellipsiss">
+					{{member.member_last_name}}
+				</div>
+			</td>
+
+			<td>
+				<div :title="member.member_expire_time" class="ellipsiss">{{member.member_expire_time}}</div>
+			</td>
+
+			<td>
+				<div class="ellipsiss">
+					<span v-if="member.member_is_logined == 1" class="lang">Yes</span>
+					<span v-if="member.member_is_logined != 1" class="lang">No</span>
+				</div>
+			</td>
+
+			<td>
+				<div class="ellipsiss">
+					<span v-if="member.member_is_active == 1" class="lang">Yes</span>
+					<span v-if="member.member_is_active != 1" class="lang">No</span>
+				</div>
+			</td>
+
+			<td>
+				<div v-if="member.offers > 0" :title="member.offers" class="ellipsiss">
+					<a :href="'javascript:show_offers('+member.offers+')'" >{{member.offers}}</a>
+				</div>
+			</td>
+
+			<td>
+				<div :title="member.member_points" class="ellipsiss">{{member.member_points}}</div>
+			</td>
+
+			<td>
+				<div :title="member.member_phone" class="ellipsiss">{{member.member_phone}}</div>
+			</td>
+
+			<td>
+				<div :title="member.member_comments" class="width-200 ellipsiss">{{member.member_comments}}</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+<script type="x-template" id="tmpl-members-guest-table">
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+		<tr>
+			<th>
+				<div title="Account" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_account')" class="lang">Account</a>
+				</div>
+			</th>
+
+			<th v-if="license_using_billing">
+				<div title="Balance" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_balance')" class="lang">Balance</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Group" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_group_name')" class="lang">Group</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Account Expire Date" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_expire_time')" class="lang">Expire date</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Login Status" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_is_logined')" class="lang">Login status</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Account Status" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_is_active')" class="lang">Account status</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Offers" class="ellipsiss">
+					<a href="javascript:guest_sort_col('offers')" class="lang">Offers</a>
+				</div>
+			</th>
+
+			<th>
+				<div title="Comments" class="ellipsiss">
+					<a href="javascript:guest_sort_col('member_comments')" class="lang">Comments</a>
+				</div>
+			</th>
+
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="member in guest_members" class="memberItem" :data-member_id="member.member_id" :data-member_account="member.member_account" :data-member_group_id="member.member_group_id" :data-member_is_active="member.member_is_active">
+			<td>
+				<div class="ellipsiss width-100" title="{%=o.members[i].member_account%}">
+					<div v-if="member.member_account == -1">
+						<a class="view-guest" style="cursor:pointer">{{member.member_account}}</a>
+						<span class="hidden member_id">{{member.member_id}}</span>
+						<span class="hidden member_group_id">{{member.member_group_id}}</span>
+					</div>
+					<div v-if="member.member_account != -1">{{member.member_account}}</div>
+				</div>
+			</td>
+
+			<td v-if="license_using_billing">
+				<div v-if="member.member_group_id != -3" :title="member.member_balance" class="ellipsiss">
+					{{member.member_balance}}
+				</div>
+			</td>
+
+			<td>
+				<div :title="member.member_group_name" class="ellipsiss">{{member.member_group_name}}</div>
+			</td>
+
+			<td>
+				<div :title="member.member_expire_time" class="ellipsiss">{{member.member_expire_time}}</div>
+			</td>
+
+			<td>
+				<div class="ellipsiss">
+					<span v-if="member.member_is_logined == 1" class="lang">Yes</span>
+					<span v-if="member.member_is_logined != 1" class="lang">No</span>
+				</div>
+			</td>
+
+			<td>
+				<div class="ellipsiss">
+					<span v-if="member.member_is_active == 1" class="lang">Yes</span>
+					<span v-if="member.member_is_active != 1" class="lang">No</span>
+				</div>
+			</td>
+
+			<td>
+				<div v-if="member.offers > 0" class="ellipsiss">
+					<a :href="`javascript:show_offers(${member.member_id});`">{{member.offers}}</a>
+				</div>
+			</td>
+
+			<td>
+				<div :title="member.member_comments" class="width-200 ellipsiss">{{member.member_comments}}</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+</script>
+{/literal}
+
+{literal}
+<script>
+
+	var AreaTabs = {
+		props:['tab_areas'],
+		template: "#tmpl-area-tabs"
+	}
+
+	var LockButton ={
+		props:['locked','dragclass'],
+		template: "#tmpl-lock-button"
+	}
+
+	var ShiftButton = {
+		props:['shift_status'],
+		template: "#tmpl-shift-button",
+		methods: {translate_string: function(string){
+				return translate_string(string);
+			}}
+	}
+
+	var UnassignedArea = {
+		props:['unassigned_boxes'],
+		template: "#tmpl-unassigned",
+		methods: {box_name: function(string){
+				return box_name(string);
+			}}
+	}
+
+	var LayoutArea = {
+		props:['boxes','areas'],
+		template: "#tmpl-area",
+		methods: {box_name: function(string){
+				return box_name(string);
+			}}
+	}
+
+	var CheckoutTable = {
+		props:['pc_payment'],
+		template: "#tmpl-pcs-payment"
+	}
+
+	var PcsForm = {
+		props:['pcs_form'],
+		template: "#tmpl-pcs-form"
+	}
+
+	var Group_select = {
+		props:['pc_group','pc_group_id'],
+		template: "#tmpl-pc-groups"
+	}
+
+	var GroupSelect = {
+		props:['pc_group_edit'],
+		template: "#tmpl-pc-groups-edit"
+	}
+
+	var TablePc = {
+		props:['table_pc'],
+		template: "#tmpl-table-pc",
+		methods: {translate_string: function(string){
+				return translate_string(string);
+			}}
+	}
+
+	var TableDevice = {
+		props:['table_device'],
+		template: "#tmpl-table-device",
+		methods: {translate_string: function(string){
+				return translate_string(string);
+			}}
+	}
+
+	var theFilterParams = {
+		query: '',
+		order: 'name',
+		ord: 'asc',
+		search_text: '',
+		sort_name: 'member_id',
+		sort: 'desc',
+		paging_info: {
+			total_records: 0,
+			pages: 1,
+			page: 1,
+			page_prev: 1,
+			page_next: 1,
+			page_start: 1,
+			page_end: 1,
+		}
+	};
+
+	var theComputers = [];
+	var theOffers = [];
+	var theRefreshOnlineLeftInterval = null;
+	var theAreas = [];
+	var theDeletedAreas = [];
+	var theShiftStatus = 0;
+	var theChange = false;
+	var theCntrlIsPressed=false;
+
+	function selected_changed(pc_only)
+	{
+		var selected_count = 0;
+		var start_session_available = 0;
+		var add_time_available = 0;
+		var check_out_available = 0;
+		var table_id = pc_only ? 'pc' : 'device';
+		$("#table-" + table_id + " tbody tr").each(function() {
+			if ($(this).attr('class').indexOf('selected') >= 0) {
+				selected_count += 1;
+				if ($(this).data('pc_status_text').length == 0)
+					return;
+
+				if ($(this).data('pc_status_text').toLowerCase() == 'offline' || $(this).data('pc_status_text').toLowerCase() == 'standby') {
+					start_session_available += 1;
+					return;
+				}
+
+				check_out_available += 1;
+
+				if ($(this).data('member_group_name') != null && $(this).data('member_group_name').toLowerCase() == 'postpaid') {
+					add_time_available = -99;
+					return;
+				}
+			}
+		});
+
+		if (selected_count == $("#table-" + table_id + " tbody tr").length)
+			$('#select-all-' + table_id).attr('class', 'fa fa-check-square-o');
+		else
+			$('#select-all-' + table_id).attr('class', 'fa fa-square-o');
+
+		if (selected_count > 0 && start_session_available == selected_count) {
+			$('#tbar-start-prepaid').removeAttr('disabled');
+			$('#tbar-start-postpaid').removeAttr('disabled');
+			$('#tbar-start-offer').removeAttr('disabled');
+		}
+		else {
+			$('#tbar-start-prepaid').prop('disabled', 'disabled');
+			$('#tbar-start-postpaid').prop('disabled', 'disabled');
+			$('#tbar-start-offer').prop('disabled', 'disabled');
+		}
+
+		if (selected_count > 0 && add_time_available == selected_count)
+			$('#tbar-add-time').removeAttr('disabled');
+		else
+			$('#tbar-add-time').prop('disabled', 'disabled');
+
+		if (check_out_available > 0)
+			$('#tbar-check-out').removeAttr('disabled');
+		else
+			$('#tbar-check-out').prop('disabled', 'disabled');
+	}
+
+	function get_selected_pcs()
+	{
+		var out = Array();
+		if($('#tab-pc').is(':visible'))
+		{
+			$("#table-pc tbody tr").each(function() {
+				if ($(this).attr('class').indexOf('selected') >= 0) {
+					out.push({
+						pc_name: $(this).data('pc_name'),
+						pc_mac: $(this).data('pc_mac'),
+						pc_status_text: $(this).data('pc_status_text'),
+						member_account: $(this).data('member_account'),
+						member_group_name: $(this).data('member_group_name'),
+						is_console: $(this).data('is_console'),
+						pc_enabled: $(this).data('pc_enabled')
+					});
+				}
+			});
+		}
+
+		if($('#tab-device').is(':visible'))
+		{
+			$("#table-device tbody tr").each(function() {
+				if ($(this).attr('class').indexOf('selected') >= 0) {
+					out.push({
+						pc_name: $(this).data('pc_name'),
+						pc_mac: $(this).data('pc_mac'),
+						pc_status_text: $(this).data('pc_status_text'),
+						member_account: $(this).data('member_account'),
+						member_group_name: $(this).data('member_group_name'),
+						is_console: $(this).data('is_console'),
+						pc_enabled: $(this).data('pc_enabled')
+					});
+				}
+			});
+		}
+		return out;
+	}
+
+
+	function cashier_expense_post()
+	{
+		var formData = $("#expenseAjaxForm").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: formData,
+			success: function(data){
+				if (data.result != 1)
+				{
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				$('.myModalExpense').modal('hide');
+			}
+		});
+
+		return false;
+	}
+
+	function check_out()
+	{
+		var pcs;
+		if(get_selected_pcs().length > 0)
+			pcs = get_selected_pcs();
+		else
+			pcs = get_selected_boxes();
+
+		var data = {
+			action: 'ajax_pc_get_payment_info',
+			pcs: []
+		};
+		pcs.forEach(function(pc) {
+			data.pcs.push(pc.pc_name);
+		});
+
+
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			data: data,
+			cache: false,
+			success: function(data){
+				if (data.result == 0) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				var pcs_payment = data.pcs_payment;
+
+				//$('#checkoutAjaxForm .table-pcs tbody').html(tmpl('tmpl-pcs-payment', pcs_payment));
+				app.$data.pcs_payment = pcs_payment;
+				var total_cost = 0;
+				var total_balance = 0;
+				var total_balance_bonus = 0;
+				var total_refund = 0;
+
+				for(i = 0; i < pcs_payment.length; i ++)
+				{
+					total_cost += pcs_payment[i].pc_cost;
+					total_balance += pcs_payment[i].member_balance;
+					total_balance_bonus += pcs_payment[i].member_balance_bonus;
+					total_refund += pcs_payment[i].member_refund;
+				}
+
+				$('#total_cost').html(total_cost.toFixed(2));
+				$('#total_balance').html(total_balance.toFixed(2));
+				$('#total_balance_bonus').html(total_balance_bonus.toFixed(2));
+
+				$('#check_paid').val('');
+				if (total_cost > total_balance + total_balance_bonus) {
+					$('#paid_tr').show();
+					$('#submit-pc-checkout').prop('disabled', true);
+				}
+				else {
+					$('#paid_tr').hide();
+					$('#submit-pc-checkout').prop('disabled', false);
+				}
+
+				$('#total_change').html(total_refund.toFixed(2));
+
+				$(".myModalCheckout").modal('show');
+			}
+		})
+	}
+
+	function move_session()
+	{
+		var pcs;
+		if(get_selected_pcs().length > 0)
+			pcs = get_selected_pcs();
+		else
+			pcs = get_selected_boxes();
+
+		if (pcs.length != 1)
+			return;
+
+		var from_pc = null;
+		theComputers.forEach(function(pc){
+			if (pc.pc_name.toString().toLowerCase() == pcs[0].pc_name.toString().toLowerCase()) {
+				from_pc = pc;
+			}
+		});
+		if (from_pc == null)
+			return;
+
+		$('#move_from').val(from_pc.pc_name);
+		$('#moveAjaxForm input[name=pc_name]').val(from_pc.pc_name);
+
+		var options = new Array();
+		// only allow move between same group
+		theComputers.forEach(function(pc){
+			if (pc.member_id > 0 || pc.pc_enabled == 0)
+				return;
+
+			if (from_pc.pc_group_name != pc.pc_group_name)
+				return;
+
+			options.push('<option value="{0}">{1}</option>'.format(pc.pc_name, pc.pc_name));
+		});
+		$('#move_to').html(options.join(''));
+
+		$('.myModalMove').modal('show');
+	}
+
+	function prepaid_session()
+	{
+		$(".myModalAddtime").modal('show');
+	}
+
+	function postpaid_session()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		//$('.postpaid_pcs').html(tmpl('tmpl-pcs-form', selected_pcs));
+		app.$data.pcs_form = selected_pcs;
+		if (selected_pcs.length == 1)
+			$('#postpaidAjaxForm .message').html(translate_string('Are you sure you want to start postpaid session on this computer?'));
+		else
+			$('#postpaidAjaxForm .message').html(translate_string('Are you sure you want to start postpaid session on these computer?'));
+		$(".myModalPostpaid").modal('show');
+	}
+
+	function offer_select_changed()
+	{
+		var pcs;
+		if(get_selected_pcs().length > 0)
+			pcs = get_selected_pcs();
+		else
+			pcs = get_selected_boxes();
+
+		var product_id = $('#addofferAjaxForm select[name=offer_id]').val();
+
+		$('#addofferAjaxForm input[name=offer_description]').val('');
+		$('#addofferAjaxForm input[name=offer_mins]').val('');
+		$('#addofferAjaxForm input[name=offer_price]').val('');
+		$('#addofferAjaxForm input[name=offer_cost]').val('');
+		$('#addofferAjaxForm input[name=offer_change]').val(0);
+
+		if (product_id == null)
+			return;
+
+		theOffers.forEach(function(obj) {
+			if (product_id == obj.product_id) {
+				$('#addofferAjaxForm input[name=offer_description]').val(obj.product_description);
+
+				$('#addofferAjaxForm input[name=offer_mins]').val(obj.product_mins);
+
+				$('#addofferAjaxForm input[name=offer_price]').val(obj.product_price);
+
+				var cost = obj.product_price * pcs.length;
+				$('#addofferAjaxForm input[name=offer_cost]').val(cost);
+				$('#addofferAjaxForm input[name=offer_change]').val(0);
+			}
+		});
+	}
+
+	function add_offer()
+	{
+		var pcs;
+		if(get_selected_pcs().length > 0)
+			pcs = get_selected_pcs();
+		else
+			pcs = get_selected_boxes();
+
+		if (pcs.length <= 0)
+			return;
+
+		var names = [];
+		pcs.forEach(function(pc){
+			names.push(pc.pc_name);
+		});
+
+		$.ajax({
+			method: 'POST',
+			url: 'main.php',
+			data: { action: 'ajax_pc_init_offer', pcs: names },
+			dataType: 'json',
+			success: function(data) {
+				if (data.result == 0) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				theOffers = data.offers;
+
+				var html = '';
+				var pc_names = new Array();
+				pcs.forEach(function(pc){
+					html += '<input type="hidden" name="pcs[]" value="{0}">'.format(pc.pc_name);
+					pc_names.push(pc.pc_name);
+				});
+				$('.offer_pcs').html(html);
+
+				$('#addofferAjaxForm input[name=pc_name]').val(pc_names.join(","));
+				html = '';
+				theOffers.forEach(function(obj) {
+					html = html + '<option value="' + obj.product_id + '">' + obj.product_name + "</option>";
+				});
+				$('#addofferAjaxForm select[name=offer_id]').html(html);
+				$('#addofferAjaxForm select[name=offer_id]').on('change', offer_select_changed);
+				offer_select_changed();
+
+				$('#addofferAjaxForm input[name=offer_paid]').val('');
+				$('#submit-pc-offer').prop('disabled', true);
+
+				$('.myModalAddOffer').modal('show');
+			}
+		})
+	}
+
+	function add_time()
+	{
+		$(".myModalAddtime").modal('show');
+	}
+
+	function create_device()
+	{
+		$(".myModalCreateDevice").modal('show');
+		fetch_groups();
+	}
+
+	function device_control(obj)
+	{
+		$('#device_start').prop('disabled', (!$(obj).is(':checked')));
+		$('#device_end').prop('disabled', (!$(obj).is(':checked')));
+	}
+
+	function add_order()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if (selected_pcs.length != 1)
+			return;
+
+		$('#shop_frame').attr('src', '');
+		$('.myModalShop').modal('show');
+		$('.myModalShop h4').html('Shop for ' + selected_pcs[0].member_account);
+		$('#shop_frame').attr('src', 'shop-client.php?shop_type=web&pc_name=' + selected_pcs[0].pc_name + '&member_account=' + selected_pcs[0].member_account + '&t=' + Math.random());
+	}
+
+	function pc_edit()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		$("#pcedit").val(selected_pcs[0].pc_name);
+		$.ajax({
+			type: "POST",
+			url: "main.php?action=ajax_pc_get_info&pc_name="+selected_pcs[0].pc_name,
+			cache: false,
+			success: function(data){
+				if (data.result == 0) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				//$("#groupselect").html(tmpl('tmpl-pc-groups', data.pc.groups))
+				app.$data.pc_groups = data.pc.groups;
+				app.$data.pc_group_id = data.pc.pc_group_id;
+
+				$("#edit_pc_name").val(data.pc.pc_name);
+				$("#edit_pc_comment").val(data.pc.pc_comment);
+				$('#edit_pc_group_name').val(data.pc.pc_group_name);
+
+				$(".myModalEdit").modal('show');
+			}
+		})
+	}
+
+	function pc_delete()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		app.$data.pcs_form = selected_pcs;
+		if(selected_pcs[0].is_console == 0)
+			var device_name = 'computer';
+		else
+			var device_name = 'device';
+
+		if (selected_pcs.length == 1)
+			$(".myModalDelete .message").html(translate_string("Are you sure you want to delete this " + device_name + "?"));
+		else
+			$(".myModalDelete .message").html(translate_string("Are you sure you want to delete these " + device_name + "s?"));
+		$(".myModalDelete").modal('show');
+	}
+
+	function pc_wakeonlan()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if(wss.isLogined() === true) {
+			$('#confirm_action').data('action', 'wakeonlan');
+
+			if(selected_pcs[0].is_console == 0)
+				var device_name = 'computer';
+			else
+				var device_name = 'device';
+
+			if (selected_pcs.length == 1)
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure Wake-on-LAN this ' + device_name + '?'));
+			else
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure Wake-on-LAN these ' + device_name + 's?'));
+			$('.modalConfirm').modal('show');
+		}
+	}
+
+	function pc_smart_wakeonlan()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if(wss.isLogined() === true) {
+			$('#confirm_action').data('action', 'wakeonlan');
+
+			var wakepcs = new Array();
+			selected_pcs.forEach(function(pc) {
+				var pcinfo = new Array();
+				pcinfo[1] = pc.pc_name;
+				pcinfo[2] = pc.pc_mac;
+				wakepcs.push(pcinfo);
+			});
+
+			var cmd = {
+				target: "server",
+				action: "wakeonlan",
+				pcs: wakepcs
+			};
+			wss.send(JSON.stringify(cmd));
+		}
+	}
+
+	function pc_shutdown()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if(wss.isLogined() === true) {
+			$('#confirm_action').data('action', 'shutdown');
+
+			if(selected_pcs[0].is_console == 0)
+				var device_name = 'computer';
+			else
+				var device_name = 'device';
+
+			if (selected_pcs.length == 1)
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure shutdown this ' + device_name + '?'));
+			else
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure shutdown these ' + device_name + 's?'));
+			$('.modalConfirm').modal('show');
+		}
+	}
+
+	function pc_reboot()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if(wss.isLogined() === true) {
+			$('#confirm_action').data('action', 'reboot');
+
+			if(selected_pcs[0].is_console == 0)
+				var device_name = 'computer';
+			else
+				var device_name = 'device';
+
+			if (selected_pcs.length == 1)
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure reboot this ' + device_name + '?'));
+			else
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure reboot these ' + device_name + 's?'));
+			$('.modalConfirm').modal('show');
+		}
+	}
+
+	function pc_logoff()
+	{
+		var selected_pcs;
+		if(get_selected_pcs().length > 0)
+			selected_pcs = get_selected_pcs();
+		else
+			selected_pcs = get_selected_boxes();
+
+		if(wss.isLogined() === true) {
+			$('#confirm_action').data('action', 'logoff');
+
+			if(selected_pcs[0].is_console == 0)
+				var device_name = 'computer';
+			else
+				var device_name = 'device';
+
+			if (selected_pcs.length == 1)
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure logoff this ' + device_name + '?'));
+			else
+				$('.modalConfirm .modal-body').html(translate_string('Are you sure logoff these ' + device_name + 's?'));
+			$('.modalConfirm').modal('show');
+		}
+	}
+
+	function sort_col(colName) {
+		if (theFilterParams.order == colName) {
+			theFilterParams.ord = (theFilterParams.ord == 'asc' ? 'desc' : 'asc');
+			show_computers(true);
+			show_computers(false);
+			return;
+		}
+
+		theFilterParams.order = colName;
+		theFilterParams.ord = 'asc';
+		show_computers(true);
+		show_computers(false);
+	}
+
+	// http://jsfiddle.net/jmnote/b5ug26u7/
+	function ip2long(IP) {
+		var i = 0;
+		IP = IP.match( /^([1-9]\d*|0[0-7]*|0x[\da-f]+)(?:\.([1-9]\d*|0[0-7]*|0x[\da-f]+))?(?:\.([1-9]\d*|0[0-7]*|0x[\da-f]+))?(?:\.([1-9]\d*|0[0-7]*|0x[\da-f]+))?$/i );
+		if (!IP) { return false; }
+		IP[0] = 0;
+		for (i = 1; i < 5; i += 1) {
+			IP[0] += !!((IP[i] || '').length);
+			IP[i] = parseInt(IP[i]) || 0;
+		}
+		IP.push(256, 256, 256, 256);
+		IP[4 + IP[0]] *= Math.pow(256, 4 - IP[0]);
+		if (IP[1] >= IP[5] || IP[2] >= IP[6] || IP[3] >= IP[7] || IP[4] >= IP[8]) { return false; }
+		return IP[1] * (IP[0] === 1 || 16777216) + IP[2] * (IP[0] <= 2 || 65536) + IP[3] * (IP[0] <= 3 || 256) + IP[4] * 1;
+	}
+
+	var computer_compare = function(a, b) {
+
+		var a_value = '';
+		var b_value = '';
+
+		if (theFilterParams.order == 'pc_name') {
+			a_value = a.pc_name.toLowerCase();
+			b_value = b.pc_name.toLowerCase();
+		}
+
+		if (theFilterParams.order == 'pc_status_text') {
+			a_value = a.pc_status_text.toLowerCase();
+			b_value = b.pc_status_text.toLowerCase();
+		}
+
+		if (theFilterParams.order == 'pc_comment') {
+			a_value = a.pc_comment == null ? '' : a.pc_comment.toLowerCase();
+			b_value = b.pc_comment == null ? '' : b.pc_comment.toLowerCase();
+		}
+
+		if (theFilterParams.order == 'member_account') {
+			a_value = a.member_account == null ? '' : a.member_account.toLowerCase();
+			b_value = b.member_account == null ? '' : b.member_account.toLowerCase();
+		}
+
+		if (theFilterParams.order == 'pc_group_name') {
+			a_value = a.pc_group_name == null ? '' : a.pc_group_name.toLowerCase();
+			b_value = b.pc_group_name == null ? '' : b.pc_group_name.toLowerCase();
+		}
+
+		if (theFilterParams.order == 'pc_ip') {
+			a_value = a.pc_ip == null ? 0 : ip2long(a.pc_ip);
+			b_value = b.pc_ip == null ? 0 : ip2long(b.pc_ip);
+		}
+
+		if (theFilterParams.order == 'status_connect_time_local') {
+			a_value = a.status_connect_time_local;
+			b_value = b.status_connect_time_local;
+		}
+
+		if (theFilterParams.order == 'status_connect_time_duration') {
+			a_value = a.status_connect_time_duration;
+			b_value = b.status_connect_time_duration;
+		}
+
+		if (theFilterParams.order == 'status_connect_time_left') {
+			a_value = a.status_connect_time_left;
+			b_value = b.status_connect_time_left;
+		}
+
+		if (theFilterParams.order == 'member_balance') {
+			a_value = a.member_balance;
+			b_value = b.member_balance;
+		}
+
+		if (theFilterParams.order == 'status_disconnect_time_local') {
+			a_value = a.status_disconnect_time_local;
+			b_value = b.status_disconnect_time_local;
+		}
+
+		if (theFilterParams.order == 'offer_in_using') {
+			a_value = a.offer_in_using;
+			b_value = b.offer_in_using;
+		}
+
+		var ret = 0;
+		if (a_value < b_value)
+			ret = -1;
+		if (a_value > b_value)
+			ret = 1;
+		if (theFilterParams.ord == 'desc')
+			ret = 0 - ret;
+		return ret;
+	}
+
+	function bind_pc_item_contextMenu(pc_only)
+	{
+		table_id = (pc_only ? 'pc' : 'device');
+
+		$.contextMenu({
+			selector: '#table-' + table_id + ' tbody tr',
+			build: function($trigger, e) {
+				e.preventDefault();
+
+				table_id = (pc_only ? 'pc' : 'device');
+				if ($trigger.attr('class').indexOf('selected') < 0)
+				{
+					$('#table-' + table_id + ' tbody tr').removeClass('selected');
+					$('#table-' + table_id + ' tbody i').attr('class', 'fa fa-square-o');
+
+					$trigger.addClass('selected');
+					$trigger.children('td.check').children('i').attr('class', 'fa fa-check-square-o');
+				}
+
+				var selected_pcs = get_selected_pcs();
+				if (selected_pcs.length == 0)
+					return false;
+
+				// not yet obtained the status of pc list
+				if (selected_pcs[0].pc_status_text == null)
+					return false;
+
+				var start_session_available = 0;
+				var add_time_available = 0;
+				var pc_enabled = 0;
+				var enable_available = 0;
+				var pcs_postpaid = 0;
+				var pcs_prepaid = 0;
+				selected_pcs.forEach(function(pc){
+					if (pc.pc_status_text.toLowerCase() == 'offline' || pc.pc_status_text.toLowerCase() == 'standby')
+						start_session_available += 1;
+					if (pc.pc_status_text.toLowerCase() == 'maintenance')
+						enable_available = 1;
+					if (pc.member_group_name != null && pc.member_group_name.toLowerCase() == 'postpaid')
+					{
+						pcs_postpaid ++;
+						add_time_available = -9999;
+					}
+					else
+						add_time_available += 1;
+					if (pc.member_group_name != null && pc.member_group_name.toLowerCase() == 'prepaid')
+					{
+						pcs_prepaid ++;
+					}
+					if(pc.pc_enabled == 1)
+						pc_enabled =1;
+				});
+
+				var title = selected_pcs[0].pc_name;
+				if (selected_pcs.length > 1)
+					title = translate_string('{0} ' + (pc_only ? 'Computers' : 'Devices')).format(selected_pcs.length);
+
+				/*
+			<lang>{0} Computers</lang>
+			<lang>{0} Devices</lang>
+			*/
+
+				var items = {};
+				items['header'] = { name: title, disabled: true, className: 'contextmenu-item-header' };
+
+				if(selected_pcs[0].pc_enabled == "1")
+				{
+					if (selected_pcs.length == start_session_available)
+					{
+						items['prepaid_session'] = { name: translate_string('Start prepaid session') };
+						{/literal}
+							{if !$disable_postpaid}
+							items['postpaid_session'] = { name: translate_string('Start postpaid session') };
+							{/if}
+								{literal}
+								items['add_offer'] = { name: translate_string('Start offer session') };
+								items['sep1'] = '------------';
+							}
+						else
+							{
+								if (add_time_available > 0)
+									items["add_time"] = { name: translate_string("Add time") };
+								if (selected_pcs.length == 1) {
+									items["add_order"] = { name: translate_string("Add order") };
+									items["add_offer"] = { name: translate_string("Add offer") };
+									items["move_session"] = { name: translate_string("Move session") };
+								}
+
+								// all are prepaid, or all are postpaid, or all are member/guest
+								if(selected_pcs.length == pcs_postpaid || selected_pcs.length == pcs_prepaid || (pcs_postpaid == 0 && pcs_prepaid == 0))
+									items["check_out"] = { name: translate_string("Check out") };
+								items["sep2"] = "------------";
+							}
+						}
+
+						{/literal}
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							{literal}
+							if (selected_pcs.length == 1)
+								items["pc_edit"] = {name: translate_string("Edit")};
+							items["pc_delete"] = {name: translate_string("Delete")};
+							items["sep3"] = "------------";
+							{/literal}
+								{/if}
+									{literal}
+
+									items["manage"] = {
+										name: translate_string("Manage"),
+										items: {
+											pc_wakeonlan: { name: translate_string("Wake on lan") },
+											pc_shutdown: { name: translate_string("Shutdown") },
+											pc_reboot: { name: translate_string("Reboot") },
+											pc_logoff: { name: translate_string("Logoff") }
+										}
+									};
+									items["sep4"] = "------------";
+									items["admin_message_modal"] = {name: translate_string("Send message")};
+									if(start_session_available == 1 || enable_available == 1)
+									{
+										if(pc_enabled == 1)
+											items["out_of_order"] = {name: translate_string("Disable")};
+										else
+											items["out_of_order"] = {name: translate_string("Enable")};
+									}
+									return {
+										callback: function(key, options) {
+											eval(key + '()');
+										},
+										items: items
+									};
+								}
+							});
+	}
+
+	//bind for boxes
+	function bind_boxes_contextMenu()
+	{
+		$.contextMenu({
+			selector: '.box',
+			build: function($trigger, e) {
+				e.preventDefault();
+
+				$trigger.addClass('box-selected');
+
+				var selected_pcs = get_selected_boxes();
+				console.log(selected_pcs);
+				if (selected_pcs.length == 0)
+					return false;
+
+				// not yet obtained the status of pc list
+				if (selected_pcs[0].pc_status_text == null)
+					return false;
+
+				var start_session_available = 0;
+				var add_time_available = 0;
+				var pc_enabled = 0;
+				var enable_available = 0;
+				var pcs_postpaid = 0;
+				var pcs_prepaid = 0;
+				selected_pcs.forEach(function(pc){
+					if (pc.pc_status_text.toLowerCase() == 'offline' || pc.pc_status_text.toLowerCase() == 'standby')
+						start_session_available += 1;
+					if (pc.pc_status_text.toLowerCase() == 'maintenance')
+						enable_available = 1;
+					if (pc.member_group_name != null && pc.member_group_name.toLowerCase() == 'postpaid')
+					{
+						pcs_postpaid ++;
+						add_time_available = -9999;
+					}
+					else
+						add_time_available += 1;
+					if (pc.member_group_name != null && pc.member_group_name.toLowerCase() == 'prepaid')
+					{
+						pcs_prepaid ++;
+					}
+					if(pc.pc_enabled == 1)
+						pc_enabled =1;
+				});
+
+				var title = selected_pcs[0].pc_name;
+				if (selected_pcs.length > 1)
+					title = translate_string('{0} Boxes').format(selected_pcs.length);
+
+				var items = {};
+				items['header'] = { name: title, disabled: true, className: 'contextmenu-item-header' };
+
+				if(selected_pcs[0].pc_enabled == 1)
+				{
+					if (selected_pcs.length == start_session_available)
+					{
+						items['prepaid_session'] = { name: translate_string('Start prepaid session') };
+						{/literal}
+							{if !$disable_postpaid}
+							items['postpaid_session'] = { name: translate_string('Start postpaid session') };
+							{/if}
+								{literal}
+								items['add_offer'] = { name: translate_string('Start offer session') };
+								items['sep1'] = '------------';
+							}
+						else
+							{
+								if (add_time_available > 0)
+									items["add_time"] = { name: translate_string("Add time") };
+								if (selected_pcs.length == 1) {
+									items["add_order"] = { name: translate_string("Add order") };
+									items["add_offer"] = { name: translate_string("Add offer") };
+									items["move_session"] = { name: translate_string("Move session") };
+								}
+
+								if(selected_pcs.length == pcs_postpaid || selected_pcs.length == pcs_prepaid || (pcs_postpaid == 0 && pcs_prepaid == 0))
+									items["check_out"] = { name: translate_string("Check out") };
+								items["sep2"] = "------------";
+							}
+						}
+						{/literal}
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							{literal}
+							if (selected_pcs.length == 1)
+								items["pc_edit"] = {name: translate_string("Edit")};
+							items["pc_delete"] = {name: translate_string("Delete")};
+							items["sep3"] = "------------";
+							{/literal}
+								{/if}
+									{literal}
+
+									items["manage"] = {
+										name: translate_string("Manage"),
+										items: {
+											pc_wakeonlan: { name: translate_string("Wake on lan") },
+											pc_shutdown: { name: translate_string("Shutdown") },
+											pc_reboot: { name: translate_string("Reboot") },
+											pc_logoff: { name: translate_string("Logoff") }
+										}
+									};
+									items["sep4"] = "------------";
+									if($trigger.context.dataset.is_console == 0)
+										items["admin_message_modal"] = {name: translate_string("Send message")};
+									if(start_session_available == 1 || enable_available == 1)
+									{
+										if(pc_enabled == 1)
+											items["out_of_order"] = {name: translate_string("Disable")};
+										else
+											items["out_of_order"] = {name: translate_string("Enable")};
+									}
+									return {
+										callback: function(key, options) {
+											eval(key + '()');
+										},
+										items: items
+									};
+								}
+							});
+
+	}
+
+	function get_selected_pc_boxes()
+	{
+		var out = Array();
+		$(".box").each(function() {
+			if ($(this).data('is_console') == 0 && $(this).attr('class').indexOf('box-selected') >= 0) {
+				out.push({
+					pc_name: $(this).data('pc_name'),
+					pc_mac: $(this).data('pc_mac'),
+					pc_status_text: $(this).data('pc_status_text'),
+					member_account: $(this).data('member_account'),
+					member_group_name: $(this).data('member_group_name'),
+					is_console: $(this).data('is_console'),
+					pc_enabled: $(this).data('pc_enabled')
+				});
+			}
+		});
+		return out;
+	}
+
+	function get_selected_boxes()
+	{
+		var out = Array();
+		$(".box").each(function() {
+			if ($(this).attr('class').indexOf('box-selected') >= 0) {
+				out.push({
+					pc_name: $(this).data('pc_name'),
+					pc_mac: $(this).data('pc_mac'),
+					pc_status_text: $(this).data('pc_status_text'),
+					member_account: $(this).data('member_account'),
+					member_group_name: $(this).data('member_group_name'),
+					is_console: $(this).data('is_console'),
+					pc_enabled: $(this).data('pc_enabled')
+				});
+			}
+		});
+		return out;
+	}
+	// <lang> Offline </lang>
+	// <lang> Standby </lang>
+	// <lang> Online </lang>
+	// <lang> Disconnected </lang>
+	// <lang> Pause </lang>
+	// <lang> Balance </lang>
+
+	function show_computers(show_pc)
+	{
+		var sorted_computers = theComputers.sort(computer_compare);
+		var computers = [];
+		var table_id = show_pc ? 'table-pc' : 'table-device';
+		$.each(sorted_computers, function (i, list) {
+
+			if(show_pc && list.is_console == 1)
+				return true;
+			if(show_pc == 0 && list.is_console == 0)
+				return true;
+
+			if (theFilterParams.query.length > 0) {
+				if ((list.pc_name == null || list.pc_name.toLowerCase().indexOf(theFilterParams.query.toLowerCase()) < 0) &&
+					(list.pc_group_name == null || list.pc_group_name.toLowerCase().indexOf(theFilterParams.query.toLowerCase()) < 0) &&
+					(list.member_account == null || list.member_account.toLowerCase().indexOf(theFilterParams.query.toLowerCase()) < 0) &&
+					(list.member_group_name == null || list.member_group_name.toLowerCase().indexOf(theFilterParams.query.toLowerCase()) < 0))
+					return;
+			}
+
+			var trObj = $("#" + table_id + " tbody tr[data-pc_name='" + list.pc_name + "']");
+			list.pc_is_selected = false;
+			if (trObj != undefined && trObj.attr('class') != undefined)
+				list.pc_is_selected = (trObj.attr('class').indexOf('selected') >= 0);
+
+			if(list.pc_enabled == 0)
+			{
+				list.pc_name_color = '#FFFFFF;';
+				list.pc_status_text = 'Maintenance';
+				computers.push(list);
+				return;
+			}
+
+			if(list.member_id)
+			{
+				if(list.member_group_name == null)
+				{
+					if(list.member_group_id == 0)
+						list.member_group_name = 'Default';
+					if(list.member_group_id == -1)
+						list.member_group_name = 'Guest';
+					if(list.member_group_id == -2)
+						list.member_group_name = 'Prepaid';
+					if(list.member_group_id == -3)
+						list.member_group_name = 'Postpaid';
+					if(list.member_group_id == -4)
+						list.member_group_name = 'Offer';
+				}
+				list.pc_status_text = 'Online';
+				list.pc_name_color = '#00CD00;';
+				if (list.offer_in_using == null)
+					list.offer_in_using = translate_string('Balance');
+
+				if(list.pc_is_connected == 0 && list.is_console == 0)
+				{
+					list.pc_status_text = 'Disconnected';
+					list.pc_name_color = '#FF0000;';
+				}
+			}
+			else
+			{
+				list.pc_status_text = 'Offline';
+				list.pc_name_color = '#CCCCCC;';
+				if(list.pc_is_connected)
+				{
+					list.pc_status_text = 'Standby';
+					list.pc_name_color = '#FFBF00;';
+				}
+			}
+
+			computers.push(list);
+
+			/*
+		<lang>Maintenance</lang>
+		<lang>Standby</lang>
+		<lang>Online</lang>
+		<lang>Offline</lang>
+		<lang>Standby</lang>
+		<lang>Disconnected</lang>
+		*/
+		});
+
+		if(table_id == 'table-pc')app.$data.table_pc =  computers;
+		if(table_id == 'table-device')app.$data.table_device =  computers;
+
+		selected_changed(show_pc);
+
+		$('#' + table_id + ' tbody i').on('click', function(){
+			var tr = $(this).parent('td').parent('tr');
+			var class_name = tr.attr('class');
+			if (class_name != undefined && class_name.indexOf("selected") >= 0) {
+				tr.removeClass('selected');
+				$(this).attr('class', 'fa fa-square-o');
+			}
+			else {
+				tr.addClass('selected');
+				$(this).attr('class', 'fa fa-check-square-o');
+			}
+
+			selected_changed(show_pc);
+		});
+
+		bind_pc_item_contextMenu(show_pc);
+	}
+
+	function check_out_post()
+	{
+		var formData = $("#checkoutAjaxForm").serialize();
+		// action = 'ajax_pc_checkout';
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: formData,
+			success: function(data){
+				if (data.result != 1)
+				{
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1)
+				{
+					data.pc_name.forEach(function(pc_name) {
+						wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: pc_name }));
+					});
+				}
+
+				$('.myModalCheckout').modal('hide');
+			}
+		});
+
+		return false;
+	}
+
+	function prepaid_session_post()
+	{
+		pc_smart_wakeonlan();
+		var formData = $("#prepaidAjaxForm").serialize();
+		// action: ajax_pc_add_time_money
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: formData,
+			success: function(data){
+				if (data.result != 1)
+				{
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1)
+				{
+					data.pcs.forEach(function(pc_name) {
+						wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: pc_name }));
+					});
+				}
+
+				$('.myModalPrepaid').modal('hide');
+				$('.myModalAddtime').modal('hide');
+			}
+		})
+
+		return false;
+	}
+
+	function pc_edit_post()
+	{
+		var formData = $("#editAjaxForm").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: formData,
+			success: function(data){
+				if (data.result != 1)
+				{
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1)
+				{
+					var cmd = { action: 'push_clientstatus', pc_name: $('#editAjaxForm input[name=pcedit]').val() };
+					wss.send(JSON.stringify(cmd));
+				}
+
+				$('.myModalEdit').modal('hide');
+			}
+		})
+
+		return false;
+	}
+
+	function text_time_add(text, step)
+	{
+		var cols = text.split(':')
+		var sec = 0;
+		var min = 0;
+		var hour = 0;
+
+		var pos = cols.length-1;
+		if (pos >= 0)
+			sec = parseInt(cols[pos]);
+		pos -= 1;
+		if (pos >= 0)
+			min = parseInt(cols[pos]);
+		pos -= 1;
+		if (pos >= 0)
+			hour = parseInt(cols[pos]);
+
+		var total_secs = hour*3600 + min*60 + sec;
+		total_secs += step;
+
+		hour = parseInt(total_secs / 3600);
+		min = parseInt((total_secs % 3600) / 60);
+		sec = total_secs % 60;
+		sec = Math.max(0, sec)
+
+		var out = '';
+		if (hour < 10)
+			out += '0';
+		out += hour.toString();
+		out += ':';
+
+		if (min < 10)
+			out += '0';
+		out += min.toString();
+		out += ':';
+
+		if (sec < 10)
+			out += '0';
+		out += sec.toString();
+		return out;
+	}
+
+	function refresh_online_left_time()
+	{
+		var timeover_pcs = 0;
+		var timeover_devices = 0;
+		for (var i=0; i<theComputers.length; i++)
+		{
+			if (theComputers[i].status_connect_time_duration != null)
+			{
+				theComputers[i].status_connect_time_duration = text_time_add(theComputers[i].status_connect_time_duration, 1);
+				if(theComputers[i].is_console == 1)
+					$("#table-device > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=onlineTd] > div").html(theComputers[i].status_connect_time_duration);
+				else
+					$("#table-pc > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=onlineTd] > div").html(theComputers[i].status_connect_time_duration);
+			}
+
+			var time_over = null;
+			if (theComputers[i].status_connect_time_left != null)
+			{
+				theComputers[i].status_connect_time_left = text_time_add(theComputers[i].status_connect_time_left, -1);
+				if (theComputers[i].status_connect_time_left == '00:00:00')
+					time_over = '00:00:00';
+
+				if (time_over == null) {
+					if (theComputers[i].is_console == 1)
+						$("#table-device > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=leftTd] > div").html(theComputers[i].status_connect_time_left);
+					else
+						$("#table-pc > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=leftTd] > div").html(theComputers[i].status_connect_time_left);
+				}
+			}
+
+			if (theComputers[i].status_connect_time_left == null && theComputers[i].member_group_name != null && theComputers[i].member_group_name.toLowerCase() != 'postpaid')
+				time_over = '00:00:00';
+
+			if (time_over != null)
+			{
+				if(theComputers[i].is_console == 1) {
+					timeover_devices ++;
+					$("#table-device > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=leftTd] > div").html('00:00:00');
+					var tr = $("#table-device > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "']");
+					if (tr.hasClass('red'))
+						tr.removeClass('red');
+					else
+						tr.addClass('red');
+				}
+
+				if(theComputers[i].is_console != 1) {
+					timeover_pcs ++;
+					$("#table-pc > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "'] > td[class=leftTd] > div").html('00:00:00');
+					var tr = $("#table-pc > tbody > tr[data-pc_name='" + theComputers[i].pc_name + "']");
+					if (tr.hasClass('red'))
+						tr.removeClass('red');
+					else
+						tr.addClass('red');
+				}
+			}
+		}
+
+		$('#badge-timeover-pc').hide();
+		$('#badge-timeover-device').hide();
+		if (timeover_pcs > 0) {
+			$('#badge-timeover-pc').html(timeover_pcs)
+			$('#badge-timeover-pc').show();
+		}
+		if (timeover_devices > 0) {
+			$('#badge-timeover-device').html(timeover_devices)
+			$('#badge-timeover-device').show();
+		}
+	}
+	//asd
+	$(function(){
+
+		theComputers = {/literal}{$pc_list};{literal}
+		theAreas = {/literal}{$areas};{literal}
+		theShiftStatus = {/literal}{$shift_status};{literal}
+
+		if(theShiftStatus == 0)
+			$('.myModalShiftTip').modal('show');
+
+		show_computers(true);
+		show_computers(false);
+		setTimeout(function(){ build_layout(); }, );
+		lock_button(true);
+
+		if(theShiftStatus != 2) // != is_admin_staff
+			$('#lock-button-div').hide();
+
+		$(document).ajaxStart(function() {
+			$("#cover").show();
+		});
+
+		$(document).ajaxStop(function() {
+			$("#cover").hide();
+		});
+
+		$('#confirm_action').click(function() {
+			$('.modalConfirm').modal('hide');
+			var pcs;
+			if(get_selected_pcs().length > 0)
+				pcs = get_selected_pcs();
+			else
+				pcs = get_selected_boxes();
+
+			var action = $(this).data('action');
+
+			if (action == 'wakeonlan') {
+
+				var wakepcs = new Array();
+				pcs.forEach(function(pc) {
+					var pcinfo = new Array();
+					pcinfo[1] = pc.pc_name;
+					pcinfo[2] = pc.pc_mac;
+					wakepcs.push(pcinfo);
+				});
+
+				var cmd = {
+					target: "server",
+					action: "wakeonlan",
+					pcs: wakepcs
+				};
+				wss.send(JSON.stringify(cmd));
+
+			}
+			else if (action == 'shutdown') {
+
+				pcs.forEach(function(pc) {
+					var cmd = {action: "shutdown", target: "client", pc_name: pc.pc_name };
+					wss.send(JSON.stringify(cmd));
+				});
+
+			}
+			else if (action == 'reboot') {
+
+				pcs.forEach(function(pc) {
+					var cmd = {action: "reboot", target: "client", pc_name: pc.pc_name };
+					wss.send(JSON.stringify(cmd));
+				});
+
+			}
+			else if (action == 'logoff') {
+
+				pcs.forEach(function(pc) {
+					var cmd = {action: "logoff", target: "client", pc_name: pc.pc_name };
+					wss.send(JSON.stringify(cmd));
+				});
+
+			}
+		});
+
+		// delete
+		$("#submit-pc-delete").click(function(){
+			$('.myModalDelete').modal('hide');
+			var formData = $("#deleteAjaxForm").serialize();
+
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				cache: false,
+				data: formData,
+				success: function(data){
+					if (data.result != 1)
+					{
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+						return;
+					}
+
+					data.pc_list.forEach(function(pc_name) {
+						for (var i=0; i<theComputers.length; i++) {
+							if (theComputers[i].pc_name.toString().toLowerCase() == pc_name.toString().toLowerCase()) {
+								theComputers.splice(i,1);
+								break;
+							}
+						}
+					});
+					show_computers(true);
+					show_computers(false);
+					build_layout();
+				}
+			})
+
+		})
+
+
+
+		// postpaid
+		$("#submit-pc-postpaid").click(function(){
+			pc_smart_wakeonlan();
+			$('.myModalPostpaid').modal('hide');
+			var formData = $("#postpaidAjaxForm").serialize();
+
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				cache: false,
+				data: formData,
+				success: function(data){
+					if (data.result != 1)
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+
+					if (data.result == 1)
+					{
+						data.pcs.forEach(function(pc_name) {
+							wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: pc_name }));
+						});
+					}
+				}
+			})
+
+		})
+
+		function InitAddTimeMoney(fValue, nType){
+
+			var pcs;
+			if(get_selected_pcs().length == 0)
+				pcs = get_selected_boxes();
+			else
+				pcs = get_selected_pcs();
+
+			var data = {
+				action: 'ajax_pc_init_add_time_money',
+				pcs: [],
+				pc_add_value: fValue,
+				pc_add_time_type: nType
+			};
+
+			if (pcs.length > 0) {
+				pcs.forEach(function(pc){
+					data.pcs.push(pc.pc_name);
+				});
+			}
+			else {
+				data.pcs.push(current_pc.pc_name);
+			}
+
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				data: data,
+				cache: false,
+				success: function(data){
+					if (data.result == 0) {
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+						return;
+					}
+
+					var html = '';
+					var pc_names = [];
+					var total_cost = 0;
+					data.pcs.forEach(function(pc){
+						pc_names.push(pc.pc_name);
+						html += '<input type="hidden" name="pc_name[]" value="{0}">'.format(pc.pc_name);
+						html += '<input type="hidden" name="pc_cost[]" value="{0}">'.format(pc.pc_cost);
+						html += '<input type="hidden" name="pc_add_time_type[]" value="{0}">'.format(pc.pc_add_time_type);
+						html += '<input type="hidden" name="pc_add_value[]" value="{0}">'.format(pc.pc_add_value);
+						total_cost += pc.pc_cost;
+					});
+					$("#prepaidAjaxForm .prepaid_pcs").html(html);
+
+					$("#pre_pc_name").val(pc_names.join(',')).prop('disabled', true);
+					$("#pre_pc_login_account").val("Prepaid").prop('disabled', true);
+					$("#pre_pc_cost").val(total_cost).prop('disabled', true);
+					$("#pre_pc_paid").val('');
+					$("#pre_pc_change").val(0).prop('disabled', true);
+					$('#prepaidAjaxForm input[name=paid]').val(0);
+					$("#submit-pc-prepaid").prop('disabled', true);
+
+					$('.myModalPrepaid').modal('show');
+				}
+			})
+		}
+		$("#submit-cus-time").click(function(){
+			var time = parseFloat($("#pc_cus_time").val()) || 0;
+			InitAddTimeMoney(time, 0);
+		})
+		$("#submit-cus-money").click(function(){
+			var money = parseFloat($("#pc_cus_money").val()) || 0;
+			InitAddTimeMoney(money, 1);
+		})
+		$(".btn-time").click(function(){
+			InitAddTimeMoney($(this).data('min'), 0);
+		})
+		$(".btn-money").click(function(){
+			InitAddTimeMoney($(this).data('money'), 1);
+		})
+
+		$('#submit-pc-move').click(function(){
+			$('.myModalMove').modal('hide');
+			var formData = $("#moveAjaxForm").serialize();
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				cache: false,
+				data: formData,
+				success: function(data){
+					if (data.result != 1)
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+
+					if (data.result == 1)
+					{
+						var move_from = $('#moveAjaxForm input[name=pc_name]').val();
+						var move_to = $('#moveAjaxForm select[name=move_to]').val();
+
+						wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: move_from }));
+						wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: move_to }));
+					}
+				}
+			})
+		});
+
+		$(".myModalAddtime").on('shown.bs.modal', function(){
+			document.getElementById('pc_cus_time').focus();
+		});
+
+		$(".myModalPrepaid").on('shown.bs.modal', function(){
+			document.getElementById('pre_pc_paid').focus();
+		});
+
+		$(".myModalCheckout").on('shown.bs.modal', function(){
+			if ($('#paid_tr').css('display') == 'none')
+				document.getElementById('submit-pc-checkout').focus();
+			else
+				document.getElementById('check_paid').focus();
+		});
+
+		$(".myModalPostpaid").on('shown.bs.modal', function(){
+			document.getElementById('submit-pc-postpaid').focus();
+		});
+
+		$(".myModalAddOffer").on('shown.bs.modal', function(){
+			document.getElementById('offer_paid').focus();
+		});
+
+		$('input[name=search_text]').keyup(function(){
+			theFilterParams.query = $(this).val();
+			show_computers(true);
+			show_computers(false);
+			if(theShiftStatus == 0)
+				$('#table-pc tbody tr, #table-device tbody tr, .box').contextMenu(false);
+		});
+
+		$("#addofferAjaxForm input[name=offer_paid]").on("input", function(){
+			var product_id = $('#addofferAjaxForm select[name=offer_id]').val();
+			if (product_id == null) {
+				$("#submit-pc-offer").prop('disabled', true);
+				return;
+			}
+
+			var fCost = parseFloat($("#addofferAjaxForm input[name=offer_cost]").val()) || 0;
+			var fPaid = parseFloat($("#addofferAjaxForm input[name=offer_paid]").val()) || 0;
+			var fChange = (fPaid - fCost > 0) ?  (fPaid - fCost) : 0;
+			$("#addofferAjaxForm input[name=offer_change]").val(fChange == 0 ? fChange : fChange.toFixed(2));
+			$("#submit-pc-offer").prop('disabled', fPaid - fCost < 0);
+		})
+
+
+		$('#tab-layout').click(function(obj){
+			if(theCntrlIsPressed == false)
+				$('.box').removeClass('box-selected');
+		});
+		$(document).keyup(function(){
+			theCntrlIsPressed = false;
+		});
+		$(document).keydown(function(event){
+			if(event.which == "17")
+				theCntrlIsPressed = true;
+		});
+
+// tabs
+		$('#nav-pc').click(function(){
+			if(theChange == true)
+			{
+				$('.myModalChangeTab').modal('show');
+				$('.myModalChangeTab').find('input[name="tab"]').val('nav-pc');
+				return;
+			}
+			$(this).addClass('active');
+			$('#nav-device').removeClass('active');
+			$('#nav-layout').removeClass('active');
+			$('#tab-device').hide();
+			$('#tab-layout').hide();
+			$('#tab-pc').show();
+		});
+
+		$('#nav-device').click(function(){
+			if(theChange == true)
+			{
+				$('.myModalChangeTab').modal('show');
+				$('.myModalChangeTab').find('input[name="tab"]').val('nav-device');
+				return;
+			}
+			$(this).addClass('active');
+			$('#nav-pc').removeClass('active');
+			$('#nav-layout').removeClass('active');
+			$('#tab-pc').hide();
+			$('#tab-layout').hide();
+			$('#tab-device').show();
+		});
+
+		$('#nav-layout').click(function(){
+			$(this).addClass('active');
+			$('#nav-pc').removeClass('active');
+			$('#nav-device').removeClass('active');
+			$('#tab-pc').hide();
+			$('#tab-device').hide();
+			$('#tab-layout').show();
+		});
+
+		$("#top-games, #top-logs, #top-pool, #top-reports, #top-shop, #top-settings").click(function(e){
+			if(theChange == true)
+			{
+				$('.myModalChangeTab').modal('show');
+				$('.myModalChangeTab').find('input[name="tab"]').val($(this).find('a').attr('href'));
+				e.preventDefault();
+				return;
+			}
+		});
+
+		$("#top-pc, #top-member").click(function(e){
+			if(theChange == true)
+			{
+				$('.myModalChangeTab').modal('show');
+				e.preventDefault();
+				return;
+			}
+			if(e.currentTarget.id == 'top-pc')
+			{
+				$('#members_app').hide();
+				$('#main_app').show();
+				e.preventDefault();
+			}
+			if(e.currentTarget.id == 'top-member')
+			{
+				$('#members_app').show();
+				$('#main_app').hide();
+				e.preventDefault();
+			}
+		});
+		$('#members_app').hide();
+
+
+		$("#pre_pc_paid").on("input", function(){
+			var fCost = parseFloat($("#pre_pc_cost").val()) || 0;
+			var fPaid = parseFloat($("#pre_pc_paid").val()) || 0;
+			var fChange = (fPaid - fCost > 0) ?  (fPaid - fCost) : 0;
+			$("#pre_pc_change").val(fChange == 0 ? fChange : fChange.toFixed(2));
+			$("#submit-pc-prepaid").prop('disabled', fPaid - fCost < 0);
+		})
+
+
+		$("#check_paid").on("input", function(){
+			var fCost = parseFloat($('#total_cost').html()) || 0;
+			var fPaid = parseFloat($("#check_paid").val()) || 0;
+			var fBalance = parseFloat($('#total_balance').val()) || 0;
+			var fBalanceBonus = parseFloat($('#total_balance_bonus').val()) || 0;
+			var fChange = (fPaid + fBalance + fBalanceBonus - fCost > 0) ?  (fPaid + fBalance + fBalanceBonus - fCost) : 0;
+
+			$("#total_change").html(fChange == 0 ? fChange : fChange.toFixed(2).toString().replace(/\.00/, ''));
+			$('#submit-pc-checkout').prop('disabled', (fPaid + fBalance + fBalanceBonus < fCost));
+		})
+
+		$('#tbar-cashier-expense').click(function(){
+			$('#expenseAjaxForm input[name=balance]').val('');
+			$('.myModalExpense').modal('show');
+		});
+
+		$(".myModalExpense").on('shown.bs.modal', function(){
+			document.getElementById('expense_balance').focus();
+		});
+
+
+		$('#tbar-start-prepaid, #tbar-add-time').click(function() {
+			var pcs;
+			if(get_selected_pcs().length > 0)
+				pcs = get_selected_pcs();
+			else
+				pcs = get_selected_boxes();
+			if (pcs.length == 0)
+				return;
+
+			$(".myModalAddtime").modal('show');
+		});
+
+		$('#tbar-start-postpaid').click(function(){
+			var selected_pcs;
+			if(get_selected_pcs().length > 0)
+				selected_pcs = get_selected_pcs();
+			else
+				selected_pcs = get_selected_boxes();
+			if (selected_pcs.length == 0)
+				return;
+
+			//$('.postpaid_pcs').html(tmpl('tmpl-pcs-form', selected_pcs));
+			app.$data.pcs_form = selected_pcs;
+			$('#postpaidAjaxForm .message').html(translate_string('Are you sure you want to start postpaid session on these computers?'));
+			$(".myModalPostpaid").modal('show');
+		});
+
+		$('#tbar-start-offer').click(function() {
+			add_offer();
+		});
+
+		$('#tbar-check-out').click(function(){
+			var pcs;
+			if(get_selected_pcs().length > 0)
+				pcs = get_selected_pcs();
+			else
+				pcs = get_selected_boxes();
+			if (pcs.length == 0)
+				return;
+			check_out();
+		});
+
+
+		$('#select-all-pc').click(function(){
+			var is_unchecked = $(this).attr('class').indexOf('fa-check-square-o') >= 0;
+			if (is_unchecked) {
+				$('#table-pc tbody tr').removeClass('selected');
+				$('#table-pc tbody i').attr('class', 'fa fa-square-o');
+				selected_changed(true);
+				return;
+			}
+
+			$('#table-pc tbody tr').each(function(){
+				if ($(this).attr('class').indexOf('selected') < 0)
+					$(this).addClass('selected');
+			});
+			$('#table-pc tbody i').attr('class', 'fa fa-check-square-o');
+			selected_changed(true);
+		});
+
+		$('#select-all-device').click(function(){
+			var is_unchecked = $(this).attr('class').indexOf('fa-check-square-o') >= 0;
+			if (is_unchecked) {
+				$('#table-device tbody tr').removeClass('selected');
+				$('#table-device tbody i').attr('class', 'fa fa-square-o');
+				selected_changed(false);
+				return;
+			}
+
+			$('#table-device tbody tr').each(function(){
+				if ($(this).attr('class').indexOf('selected') < 0)
+					$(this).addClass('selected');
+			});
+			$('#table-device tbody i').attr('class', 'fa fa-check-square-o');
+			selected_changed(false);
+		});
+
+	});
+
+	function addoffer_post()
+	{
+		pc_smart_wakeonlan();
+		var formData = $("#addofferAjaxForm").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: formData,
+			success: function(data){
+				if (data.result != 1) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1)
+				{
+					data.pcs.forEach(function(pc_name) {
+						wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: pc_name }));
+					});
+				}
+
+				$('.myModalAddOffer').modal('hide');
+			}
+		})
+
+		return false;
+	}
+
+	// call by shop-client.php
+	function shop_notify(action, pc_name, member_id)
+	{
+		wss.send(JSON.stringify({ action: 'push_clientstatus', pc_name: pc_name }));
+		$('.myModalShop').modal('hide');
+	}
+	function create_device_form(form)
+	{
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: $(form).serialize(),
+			success: function(data){
+				if (data.result != 1)
+				{
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+				$('.myModalCreateDevice').modal('hide');
+				$("input[type=text]").val("");
+				theComputers = data.pcs;
+				show_computers(false);
+
+				wss.send(JSON.stringify({action: "query_online_clients_status"}));
+			}
+		});
+
+		return false;
+	}
+	function add_layout_group()
+	{
+		$('.myModalLayoutGroup').modal('show');
+	}
+
+	function fetch_groups()
+	{
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: {action : 'ajax_pc_fetch_groups'},
+			success: function(data){
+				if (data.result == 0) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+
+				//$("#group-select").html(tmpl('tmpl-pc-groups', data.groups))
+				app.$data.pc_group_edit = data.groups;
+			}
+		})
+	}
+
+	function create_area(form)
+	{
+		var area_name = $(form).find('input[name="area_name"]').val();
+		var j = 0;
+		var flag = false;
+		$('.drag-area').each(function(i,obj) {
+			if($(obj).data('area_name').toString().toLowerCase() == area_name.toString().toLowerCase()) {
+				sweetAlert(translate_string('Error'), translate_string('Area name already exists!'), 'error');
+				flag=true;
+				return false;
+			}
+		});
+		if(flag == true)
+			return false;
+		theDeletedAreas.forEach(function(area){
+			if(area.area_name.toString().toLowerCase() == area_name.toString().toLowerCase())
+				theDeletedAreas.splice(j, 1);
+			j++;
+		});
+		theAreas.push({
+			area_name: area_name,
+			width: '200',
+			height: '200'
+		});
+		$('.box').each(function(i, obj){
+			theComputers.forEach(function(pc){
+				if(pc.pc_name.toString().toLowerCase() == $(obj).data('pc_name').toString().toLowerCase())
+				{
+					pc.pc_area_name =$(obj).data('pc_area_name');
+					pc.pc_box_position = $(obj).css('position');
+					pc.pc_box_left = $(obj).css('left').substring(0, $(obj).css('left').length - 2);
+					pc.pc_box_top = $(obj).css('top').substring(0, $(obj).css('top').length - 2);
+				}
+			});
+		});
+		$('.myModalLayoutGroup').modal('hide');
+		$("input[type=text]").val("");
+		build_layout();
+		theChange = true;
+		return false;
+	}
+
+	function confirm_delete_area(data)
+	{
+		$('.myModalDeleteAreaConfirm').find('input[name="tab"]').val($(data).data('tab'));
+		$('.myModalDeleteAreaConfirm').modal('show');
+	}
+
+	function delete_area()
+	{
+		var area_name = $('.myModalDeleteAreaConfirm').find('input[name="tab"]').val();
+		theDeletedAreas.push({area_name:area_name});
+		for(var i=0; i<theAreas.length; i++)
+		{
+			if(theAreas[i].area_name.toString().toLowerCase() == area_name.toString().toLowerCase())
+			{
+				theAreas.splice(i, 1);
+			}
+		}
+		$('.box').each(function(i, obj){
+			theComputers.forEach(function(pc){
+				if(pc.pc_name.toString().toLowerCase() == $(obj).data('pc_name').toString().toLowerCase())
+				{
+					pc.pc_area_name =$(obj).data('pc_area_name');
+					pc.pc_box_position = $(obj).css('position');
+					pc.pc_box_left = $(obj).css('left').substring(0, $(obj).css('left').length - 2);
+					pc.pc_box_top = $(obj).css('top').substring(0, $(obj).css('top').length - 2);
+				}
+			});
+		});
+		$('.box').each(function(i, obj){
+			if($(obj).data('pc_area_name').toString().toLowerCase() == area_name.toString().toLowerCase())
+			{
+				$('#unassigned').append($(obj));
+				$(obj).css({"position":"relative","left":"","top":""});
+				theComputers.forEach(function(pc){
+					if(pc.pc_area_name.toString().toLowerCase() == area_name.toString().toLowerCase())
+					{
+						pc.pc_area_name =0;
+						pc.pc_box_position = 'relative';
+						pc.pc_box_left = 0;
+						pc.pc_box_top = 0;
+					}
+				});
+			}
+		});
+
+
+		$('.myModalDeleteAreaConfirm').find('input[name="tab"]').val('');
+		build_layout();
+		$('.result').html('Area deleted');
+		theChange = true;
+	}
+
+	function build_layout()
+	{
+		show_area_tabs();
+
+		var boxes=[];
+		$.each(theComputers, function (i, list) {
+
+			if(list.pc_enabled == 0)
+			{
+				list.pc_name_color = '#FFFFFF;';
+				list.pc_status_text = 'Maintenance';
+				boxes.push(list);
+				return;
+			}
+
+			if(list.member_id)
+			{
+				if(list.member_group_name == null)
+				{
+					if(list.member_group_id == 0)
+						list.member_group_name = 'Default';
+					if(list.member_group_id == -1)
+						list.member_group_name = 'Guest';
+					if(list.member_group_id == -2)
+						list.member_group_name = 'Prepaid';
+					if(list.member_group_id == -3)
+						list.member_group_name = 'Postpaid';
+					if(list.member_group_id == -4)
+						list.member_group_name = 'Offer';
+				}
+				list.pc_status_text = 'Online';
+				list.pc_name_color = '#00CD00;';
+				if (list.offer_in_using == null)
+					list.offer_in_using = translate_string('Balance');
+
+				if(list.pc_is_connected == 0 && list.is_console == 0)
+				{
+					list.pc_status_text = 'Disconnected';
+					list.pc_name_color = '#FF0000;';
+				}
+			}
+			else
+			{
+				list.pc_status_text = 'Offline';
+				list.pc_name_color = '#CCCCCC;';
+				if(list.pc_is_connected)
+				{
+					list.pc_status_text = 'Standby';
+					list.pc_name_color = '#FFBF00;';
+				}
+			}
+			boxes.push(list);
+		});
+
+		//$("#unassigned").html(tmpl('tmpl-unassigned', {boxes:boxes}));
+		app.$data.unassigned_boxes = boxes;
+		//$("#layout-areas").html(tmpl('tmpl-area', {areas:theAreas,boxes:boxes}));
+		app.$data.areas = theAreas;
+		app.$data.boxes = boxes;
+
+		activate_drag();
+		bind_events_to_area_tabs();
+		bind_boxes_contextMenu();
+		//show_shift_status_button();
+
+		lock_button($('#lock-button').data('locked'));
+	}
+
+	function show_area_tabs()
+	{
+		//$("#area-tabs").html(tmpl('tmpl-area-tabs', {areas:theAreas}));
+		app.$data.tab_areas = theAreas;
+	}
+
+	function bind_events_to_area_tabs()
+	{
+		$(".area-nav-tab").each(function(i, tab){
+			$(tab).click(function(){
+				$(".area-nav-tab").each(function(i, nav) {
+					$(nav).removeClass('active');
+				});
+				$(this).addClass('active');
+				$(".drag-area").each(function(j, drag){
+					if($(tab).data('tab') == 'all')
+					{
+						$(drag).show();
+						return;
+					}
+					if($(drag).data('area_name') != $(tab).data('tab'))
+						$(drag).hide();
+					else
+						$(drag).show();
+				});
+			});
+		});
+
+	}
+
+	// out_of_order
+	function out_of_order()
+	{
+		var pcs;
+		if(get_selected_pcs().length == 0)
+			pcs = get_selected_boxes();
+		else
+			pcs = get_selected_pcs();
+
+		var data = {
+			action: 'ajax_pc_set_out_of_order',
+			pcs: [],
+		};
+		if (pcs.length > 0) {
+			pcs.forEach(function(pc){
+				data.pcs.push({pc_name:pc.pc_name, pc_enabled:pc.pc_enabled});
+			});
+		}
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			data: data,
+			cache: false,
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+				theComputers = data.pcs;
+				theAreas = data.areas;
+				show_computers(true);
+				show_computers(false);
+				build_layout();
+
+				wss.send(JSON.stringify({action: "query_online_clients_status"}));
+			}
+		});
+	}
+
+	function tab_change()
+	{
+		if($('.myModalChangeTab').find('input[name="tab"]').val() == 'nav-device')
+		{
+			$('#nav-device').addClass('active');
+			$('#nav-pc').removeClass('active');
+			$('#nav-layout').removeClass('active');
+			$('#tab-pc').hide();
+			$('#tab-layout').hide();
+			$('#tab-device').show();
+			theChange = false;
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				data: {action : 'ajax_pc_tab_layout'},
+				cache: false,
+				success: function (data) {
+					if (data.result == 0) {
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+						return;
+					}
+					theComputers = data.pcs;
+					theAreas = data.areas;
+					show_computers(true);
+					show_computers(false);
+				}
+			});
+			return;
+		}
+		if($('.myModalChangeTab').find('input[name="tab"]').val() == 'nav-pc')
+		{
+			$('#nav-pc').addClass('active');
+			$('#nav-device').removeClass('active');
+			$('#nav-layout').removeClass('active');
+			$('#tab-device').hide();
+			$('#tab-layout').hide();
+			$('#tab-pc').show();
+			theChange = false;
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				data: {action : 'ajax_pc_tab_layout'},
+				cache: false,
+				success: function (data) {
+					if (data.result == 0) {
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+						return;
+					}
+					theComputers = data.pcs;
+					theAreas = data.areas;
+					show_computers(true);
+					show_computers(false);
+				}
+			});
+			return;
+		}
+		window.location.href=($('.myModalChangeTab').find('input[name="tab"]').val());
+	}
+
+	//graph view
+	function activate_drag()
+	{
+		$( ".box" ).draggable({
+			revertDuration: 500,
+			start: function( event, ui ) {
+				//Reset
+				$( ".box" ).draggable( "option", "revert", true );
+				$('.result').html('-');
+				theChange = true;
+			}
+		});
+		$( ".drag-area" ).droppable({
+			drop: function( event, ui ) {
+				var area = $(this).find(".area").html();
+				var box = $(ui.draggable).html();
+
+				$(this).append($(ui.draggable));
+				if($(this).data('area_name')!=$(ui.draggable).data('pc_area_name'))
+					$(ui.draggable).css({"position":"relative","left":"","top":""});
+				else
+					$(ui.draggable).css({"position":"absolute"});
+
+				$( ".box" ).draggable( "option", "revert", false );
+				$('.result').html("PC <b>" + box + "</b>" + " is now in " + "<b>" + area + "</b>");
+				$(ui.draggable).data('state','assigned');
+				$(ui.draggable).data('pc_area_name',$(this).data('area_name'));
+			}
+		}).resizable({
+			ghost: true,
+			start: function( event, ui) {
+				theChange = true;
+			}
+		});
+		$( "#unassigned" ).droppable({
+			drop: function( event, ui ) {
+
+				$(this).append($(ui.draggable));
+				$(ui.draggable).css({"position":"relative","left":"","top":""});
+				$( ".box" ).draggable( "option", "revert", false );
+				$('.result').html("PC is now unassigned");
+				$(ui.draggable).data('state','unassigned');
+				$(ui.draggable).data('pc_area_name',$(this).data('area_name'));
+			}
+		})
+		$('.box').click(function(){
+			if(theCntrlIsPressed == true)
+			{
+				if($(this).hasClass('box-selected') == false)
+					$(this).addClass('box-selected');
+				else
+					$(this).removeClass('box-selected');
+			}
+		});
+
+	}
+
+	function on_lock(dra)
+	{
+		if($(dra).data('locked'))
+		{
+			lock_button(false);
+			theChange = false;
+			return;
+		}
+
+		var boxes=[];
+		var areas=[];
+		// save layout
+		$(".box").each(function(i, obj){
+			boxes.push({
+				pc_area_name: $(obj).data('pc_area_name'),
+				pc_name: $(obj).data('pc_name'),
+				pc_box_position: $(obj).css('position'),
+				pc_box_top: ($(obj).css('top')).slice(0,-2),
+				pc_box_left: ($(obj).css('left')).slice(0,-2)
+			})
+		});
+		$(".drag-area").each(function(i, obj){
+			areas.push({
+				area_name: $(obj).data('area_name'),
+				area_width: ($(obj).css('width')).slice(0,-2),
+				area_height: ($(obj).css('height')).slice(0,-2),
+			})
+		});
+		save_layout(boxes,areas);
+		theDeletedAreas=[];
+		theChange = false;
+	}
+
+	function save_layout(boxes,areas)
+	{
+		$.ajax({
+			type: "POST",
+			url: "main.php",
+			cache: false,
+			data: {
+				boxes: JSON.stringify(boxes),
+				areas: areas,
+				deleted_areas: theDeletedAreas,
+				action: 'ajax_save_graph_layout'
+			},
+			success: function (data) {
+				if (data.result != 1) {
+					sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+					return;
+				}
+				theComputers = data.pcs;
+				theAreas = data.areas;
+				show_computers(true);
+				show_computers(false);
+				lock_button(true);
+			}
+		});
+	}
+
+	function lock_button(lock)
+	{
+		if(lock)
+		{
+			dragclass= 'fa fa-lock';
+			$('.box').draggable({'disabled':true});
+			$( ".drag-area" ).resizable('disable');
+			//$('#lock-button-div').html(tmpl('tmpl-lock-button', {locked:lock, dragclass:dragclass}));
+			app.$data.locked = lock;
+			app.$data.dragclass = dragclass;
+			$('#area_add_button, #area_delete_button').hide();
+			return;
+		}
+
+		dragclass= 'fa fa-unlock';
+		$('.box').draggable({'disabled':false});
+		$( ".drag-area" ).resizable('enable');
+		//$('#lock-button-div').html(tmpl('tmpl-lock-button', {locked:lock, dragclass:dragclass}));
+		app.$data.locked = lock;
+		app.$data.dragclass = dragclass;
+		$('#area_add_button, #area_delete_button').show();
+	}
+
+	function show_shift_status_button()
+	{
+		//$('#shift_button').html(tmpl('tmpl-shift-button', {shift_status:theShiftStatus}));
+		app.$data.shift_status = theShiftStatus;
+		if(theShiftStatus == 0)
+		{
+			$("#top-games, #top-logs, #top-member, #top-pool, #top-reports, #top-shop, #toolbar, #submitLogoutend, #word_only").hide();
+			$('#table-pc tbody tr, #table-device tbody tr, .box').contextMenu(false);
+			return;
+		}
+		$("#top-games, #top-logs, #top-member, #top-pool, #top-reports, #top-shop, #toolbar, #submitLogoutend, #word_only").show();
+		$('#table-pc tbody tr, #table-device tbody tr, .box').contextMenu(true);
+
+	}
+
+	function box_name(name)
+	{
+		var regex = /[\d|,|.|\+]+/g;
+		var match = name.match(regex);
+		var new_name ='';
+
+		if(match !== null)
+		{
+			var numbers = match.join('');
+			for(var i=0; i<3 ;i++)
+				new_name = numbers.charAt(i) == '' ? '0'.concat(new_name) : new_name.concat(numbers.charAt(i));
+
+			return new_name;
+		}
+
+		return name.substring(0, 3);
+	}
+
+	function admin_message_modal()
+	{
+		$('.myModalAdminMessage').modal('show');
+	}
+
+	function admin_message(form)
+	{
+		var pcs;
+		var message = $(form).find('textarea[name="message"]').val();
+		if(get_selected_pcs().length > 0)
+			pcs = get_selected_pcs();
+		if(get_selected_pc_boxes().length > 0)
+			pcs = get_selected_pc_boxes();
+
+		if (pcs.length == 0)
+			return false;
+
+		pcs.forEach(function(pc){
+			wss.send(JSON.stringify({ action: 'admin_message', pc_name: pc.pc_name, message: message}));
+			$.ajax({
+				type: "POST",
+				url: "main.php",
+				cache: false,
+				data: {
+					pc_name: pc.pc_name,
+					member_account: pc.member_account,
+					message: message,
+					action: 'ajax_admin_message'
+				},
+				success: function (data) {
+					if (data.result != 1) {
+						sweetAlert(translate_string('Error'), translate_string(data.message), 'error');
+						return;
+					}
+					toastr.success(translate_string('Message sent to pc ') + pc.pc_name)
+				}
+			});
+		});
+		$('.myModalAdminMessage').find('textarea[name="message"]').val('');
+		$('.myModalAdminMessage').modal('hide');
+		return false;
+	}
+
+	wss.onLoginSuccess = function()
+	{
+		var cmd = {action: "query_online_clients_status"};
+		wss.send(JSON.stringify(cmd));
+	}
+
+	wss.onRecv = function(json) {
+		if (process_remind(json))
+			return;
+
+		if (json.action != 'pc_status')
+			console.log(json);
+
+		if(json.action == 'pc_status')
+		{
+			if(typeof(json.pc_stats) != 'undefined')
+			{
+				$('#pcs_free').html(json.pc_stats.free);
+				$('#pcs_busy').html(json.pc_stats.busy);
+				$('#pcs_off').html(json.pc_stats.off);
+				$('#pcs_member').html(json.pc_stats.member);
+				$('.pcs_status').show();
+			}
+
+			if (theRefreshOnlineLeftInterval != null) {
+				clearInterval(theRefreshOnlineLeftInterval);
+				theRefreshOnlineLeftInterval = null;
+			}
+
+			json.pcs.forEach(function(pc) {
+				console.log('pc_status, pc=', pc.pc_name);
+				var exists = false;
+				for (var i=0; i<theComputers.length; i++)
+				{
+					if (theComputers[i].pc_name.toString().toLowerCase() == pc.pc_name.toString().toLowerCase())
+					{
+						exists = true;
+						theComputers[i] = pc;
+						break;
+					}
+				}
+
+				if (!exists)
+					theComputers.push(pc);
+			});
+			show_computers(true);
+			show_computers(false);
+			build_layout();
+			//show_shift_status_button();
+			theRefreshOnlineLeftInterval = setInterval(refresh_online_left_time, 1000);
+		}
+	}
+	wss.connect();
+</script>
+{/literal}
+<script type="text/javascript">
+	var theUserRole = '{$smarty.session.CafeStaffRole}';
+</script>
+{literal}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+	//members_app
+	var MembersTable = {
+		props:['members','license_using_billing'],
+		template: "#tmpl-members-table",
+	}
+
+	var GuestTable = {
+		props:['guest_members','license_using_billing'],
+		template: "#tmpl-members-guest-table",
+	}
+
+	var OfferOptions = {
+		props:['offers'],
+		template: `<select name="product_id" class="form-control">
+						<option v-for="offer in offers" :value="offer.product_id">{{offer.product_name}}</option>
+					</select>`
+	}
+
+	var MemberGroupOptions = {
+		props:['member_groups'],
+		template: `<select name="member_group_id" id="select_group_name" class="form-control">
+						<option v-for="member_group in member_groups" value="member_group.member_group_id">{{member_group.member_group_name}}</option>
+					</select>`
+	}
+
+	var OffersTable = {
+		props:['offer_list','user_role'],
+		template: "#tmpl-offer-table",
+		methods: {translate_string: function(string){
+				translate_string(string);
+			}}
+	}
+
+	var MembersComponent = {
+		template: '#members_app',
+		components: {
+			'members-table': MembersTable,
+			'guests-table': GuestTable,
+			'offer-options': OfferOptions,
+			'member-group-options': MemberGroupOptions,
+			'offers-table': OffersTable
+		},
+		props: [
+			'user_role',
+			'members',
+			'license_using_billing',
+			'guest_members',
+			'offers',
+			'member_groups',
+			'offer_list',
+		]
+	}
+
+	var ComputersComponent = {
+		template: '#main_app',
+		components: {
+			'area-tabs': AreaTabs,
+			'lock-button': LockButton,
+			'shift-button': ShiftButton,
+			'unassigned-area': UnassignedArea,
+			'layout-area': LayoutArea,
+			'checkout-table': CheckoutTable,
+			'pcs-form': PcsForm,
+			'groupselect': Group_select,
+			'group-select': GroupSelect,
+			'table-pc': TablePc,
+			'table-device': TableDevice
+		},
+		props: [
+			'tab_areas',
+			'locked',
+			'dragclass',
+			'unassigned_boxes',
+			'shift_status',
+			'boxes',
+			'areas',
+			'pc_payment',
+			'pcs_form',
+			'pc_group',
+			'pc_group_id',
+			'pc_group_edit',
+			'table_pc',
+			'table_device'
+		]
+	}
+
+	var app = new Vue({
+		el: "#app",
+		components:{
+			'computers-component': ComputersComponent,
+			'members-component': MembersComponent
+		},
+		data:{
+			'tab_areas': [],
+			'locked': '',
+			'dragclass': '',
+			'unassigned_boxes': [],
+			'shift_status': 1,
+			'boxes': [],
+			'areas': [],
+			'pc_payment': [],
+			'pcs_form': [],
+			'pc_group': [],
+			'pc_group_id': '',
+			'pc_group_edit': [],
+			'table_pc': [],
+			'table_device': [],
+			'user_role': theUserRole,
+			'members': [],
+			'license_using_billing':false,
+			'guest_members': [],
+			'offers': [],
+			'member_groups': [],
+			'offer_list': [],
+			'currentTab': 'computers'
+		},
+		computed:	{
+			currentTabComponent: function () {
+				return this.currentTab + '-component'
+			}
+		}
+	})
+
+
+	var theOffers = [];
+	var current_member = null;
+	var theGuestFilterParams = {
+		search_text: '',
+		sort_name: 'member_id',
+		sort: 'desc',
+		paging_info: {
+			total_records: 0,
+			pages: 1,
+			page: 1,
+			page_prev: 1,
+			page_next: 1,
+			page_start: 1,
+			page_end: 1,
+		}
+	};
+
+	function switch_tab(code)
+	{
+		$('li[role=presentation]').removeClass('active');
+		$('li[data-code=' + code + ']').addClass('active');
+
+		$('.member_div').hide();
+		$('.guest_div').hide();
+
+		$('.' + code + '_div').show();
+
+		if (code == 'member')
+			refresh_member_list();
+
+		if (code == 'guest')
+			refresh_guest_list();
+	}
+
+	function show_offers(member_id)
+	{
+		if (typeof(member_id) == 'undefined') {
+			if (current_member == null) {
+				return;
+			}
+
+			member_id = current_member.member_id;
+		}
+
+		// if click "show offers" directly, we would update current_member. because delete order used current_member.member_id
+		current_member = { member_id: member_id };
+
+		$.ajax({
+			method: 'POST',
+			url: 'members.php',
+			data: { action: 'ajax_get_member_offer_list', member_id: member_id },
+			dataType: 'json',
+			success: function(data) {
+				if (data.offers.length == 0) {
+					sweetAlert('', translate_string('No offers'), 'success');
+					$('.myModalOffers').modal('hide');
+					return;
+				}
+
+				app.$data.offer_list = data;
+				$('.myModalOffers').modal('show');
+			}
+		})
+	}
+
+	function offer_select_changed()
+	{
+		if (current_member == null)
+			return;
+
+		$('#addofferAjaxForm input[name=member_name]').val(current_member.member_account);
+
+		var product_id = $('#addofferAjaxForm select[name=product_id]').val();
+		theOffers.forEach(function(obj) {
+			if (product_id == obj.product_id) {
+				$('#addofferAjaxForm input[name=offer_description]').val(obj.product_description);
+
+				$('#addofferAjaxForm input[name=offer_mins]').val(obj.product_mins);
+				$('#addofferAjaxForm input[name=offer_price]').val(obj.product_price);
+
+				var cost = obj.product_price;
+				$('#addofferAjaxForm input[name=cost]').val(cost);
+				$('#addofferAjaxForm input[name=offer_cost]').val(cost);
+				$('#addofferAjaxForm input[name=offer_cost_show]').val(cost);
+				$('#addofferAjaxForm input[name=offer_change]').val(0);
+			}
+		});
+	}
+
+	function show_add_offer_dialog()
+	{
+		if (current_member == null)
+			return;
+
+		$('#addofferAjaxForm input[name=member_id]').val(current_member.member_id);
+		app.$data.offers = theOffers;
+		$('#addofferAjaxForm select[name=product_id]').on('change', offer_select_changed);
+		$('#addofferAjaxForm input[name=offer_paid]').val('');
+		$('#submit-member-offer-checkout').prop('disabled', true);
+		offer_select_changed();
+
+
+		$('.myModalAddOffer').modal('show');
+	}
+
+	function add_offer()
+	{
+		$.ajax({
+			method: 'POST',
+			url: 'members.php',
+			data: { action: 'ajax_get_offer_list' },
+			dataType: 'json',
+			success: function(data) {
+				theOffers = data.offers;
+				show_add_offer_dialog();
+			}
+		});
+	}
+
+	function delete_offer(id)
+	{
+		swal({
+			title: translate_string("Warning"),
+			text: translate_string("Are you sure you want to delete this offer?"),
+			type: "warning",
+			showCancelButton: true,
+			confirmButtonText: translate_string("Yes"),
+			closeOnConfirm: true,
+			html: false
+		}, function(){
+
+			$.ajax({
+				method: 'POST',
+				url: 'members.php',
+				data: { action: 'ajax_delete_offer', id: id },
+				dataType: 'json',
+				success: function(data) {
+					if (data.result == 0) {
+						sweetAlert('', translate_string(data.message), 'error');
+						return;
+					}
+
+					var cmd = { action: 'push_clientstatus', member_id: current_member.member_id };
+					wss.send(JSON.stringify(cmd));
+
+					show_offers(current_member.member_id);
+
+					if ($('#tabs li[class=active]').data('code') == 'guest')
+						refresh_guest_list();
+					else
+						refresh_member_list();
+				}
+			})
+
+		});
+	}
+
+	$("#offer_paid").on("input", function(){
+		var fCost = parseFloat($('#addofferAjaxForm input[name=offer_cost]').val()) || 0;
+		var fPaid = parseFloat($('#addofferAjaxForm input[name=offer_paid]').val()) || 0;
+		var fChange = (fPaid - fCost > 0) ?  (fPaid - fCost) : 0;
+
+		$('#addofferAjaxForm input[name=offer_change]').val(fChange == 0 ? fChange : fChange.toFixed(2).toString().replace(/\.00/, ''));
+		$('#submit-member-offer-checkout').prop('disabled', (fPaid < fCost));
+	})
+
+	function addoffer_post()
+	{
+		var formData = $('#addofferAjaxForm').serialize();
+
+		$.ajax({
+			method: 'POST',
+			data: formData,
+			dataType: 'json',
+			success: function(data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1) {
+					var cmd = { action: 'push_clientstatus', member_id: $('#addofferAjaxForm input[name=member_id]').val() };
+					wss.send(JSON.stringify(cmd));
+				}
+
+				$('.myModalAddOffer').modal('hide');
+				if ($('#tabs li[class=active]').data('code') == 'guest')
+					refresh_guest_list();
+				else
+					refresh_member_list();
+				sweetAlert('', translate_string("Offer added"), "success");
+			}
+		})
+
+		return false;
+	}
+
+	function preview_guest() {
+
+		$("#viewGuestAjaxForm .modal-body").jqprint({
+			debug: false,
+			importCSS: true,
+			printContainer: true,
+			operaSupport: false
+		});
+
+	}
+
+	function print_guest(member_id) {
+
+		$.ajax({
+			type: "POST",
+			url: "members.php?action=ajax_get_member&member_id=" + member_id,
+			cache: false,
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				$('#guest_preview_account').html(data.member.member_account);
+				$('#guest_preview_password').html('123456');
+				$('#guest_preview_expire_time').html(data.member.member_expire_time);
+				$('#guest_preview_balance').html(data.member.member_balance.replace('.00', ''));
+
+				$('.myModalViewGuest').modal('show');
+			}
+		})
+	}
+
+	function edit_member(member_id) {
+
+		$.ajax({
+			type: "POST",
+			url: "members.php?action=ajax_get_member&member_id=" + member_id,
+			cache: false,
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				$.each(data.member, function (key, value) {
+					if (key !== 'groups')
+						$("#" + key).val(value);
+				});
+
+				app.$data.member_groups = data.member.member_groups;
+
+				$('#member_is_active').prop('checked', $('#member_is_active').val() == "0" ? false : true);
+				$('#member_account').prop('disabled', true);
+				$('#member_password').val('');
+				$('#member_confirm').val('');
+				$('.myModalViewMember input[name=action]').val('ajax_update_member');
+				$('#memberAjaxForm input[name=member_balance]').val(0);
+				$('#balance_group').hide();
+
+				$('.myModalViewMember').modal('show');
+			}
+		})
+	}
+
+	function refresh_member_list()
+	{
+		var data = {action:'ajax_get_member_list'};
+		data['sort_name'] = theFilterParams.sort_name;
+		data['sort'] = theFilterParams.sort;
+		data['search_text'] = theFilterParams.search_text;
+		data['page'] = theFilterParams.paging_info.page;
+		data['t'] = Math.random();
+
+		$.ajax({
+			method: 'POST',
+			url: 'members.php',
+			data: data,
+			dataType: 'json',
+			async: false,
+			success: function(data) {
+				theFilterParams.paging_info = data.paging_info;
+
+				//$('#members').html(tmpl('tmpl-members-table', {members:data.members, license_using_billing:data.license_using_billing}));
+				app.$data.members=data.members;
+				app.$data.license_using_billing=data.license_using_billing;
+
+
+
+				translate_obj($('#members'));
+				$('ul.member-pagination').html(tmpl('tmpl-pagination', theFilterParams));
+				$("#total_nums").html('(' + data.paging_info.total_records + ')');
+
+				$.contextMenu({
+					selector: '#members .memberItem',
+					build: function($trigger, e) {
+						e.preventDefault();
+
+						var member_id = $trigger.data('member_id');
+						var member_account = $trigger.data('member_account');
+						var member_group_id = $trigger.data('member_group_id');
+						current_member = {
+							member_id : member_id,
+							member_account : member_account,
+							member_group_id: member_group_id
+						};
+
+						var items = {};
+						items['header'] = { name: member_account, disabled: true, className: 'contextmenu-item-header' };
+						items['edit'] = {name: translate_string('Edit')};
+						items['top_up'] = {name: translate_string('Top up')};
+
+						{/literal}
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							{literal}
+							items['member_delete'] = { name: translate_string('Delete') };
+							{/literal}
+								{/if}
+									{literal}
+
+									items['sep1'] = "----";
+									items['add_order'] = {name: translate_string('Add order')};
+									items['sep2'] = "----";
+									items['add_offer'] = {name: translate_string('Add offer')};
+									items['show_offers'] = {name: translate_string('Show offers')};
+									items['sep3'] = "----";
+									items['event_logs'] = { name: translate_string('Event logs') };
+
+									return {
+										callback: function(key, options) {
+											eval(key + '()');
+										},
+										items: items
+									};
+								}
+							});
+
+				// 查看
+				$(".view-member").click(function(){
+					var member_id = $(this).nextAll(".member_id").text();
+					var member_group_id = $(this).nextAll(".member_group_id").text();
+					$("#mark tr").remove();
+
+					if (member_group_id == -1)
+						print_guest(member_id);
+
+					if (member_group_id >= 0)
+						edit_member(member_id);
+				});
+			}
+		})
+	}
+
+
+	function page_first()
+	{
+		theFilterParams.paging_info.page = 1;
+		refresh_member_list();
+	}
+
+	function page_previous()
+	{
+		if (theFilterParams.paging_info.page > 1)
+			theFilterParams.paging_info.page --;
+		refresh_member_list();
+	}
+
+	function page_next()
+	{
+		if (theFilterParams.paging_info.page < theFilterParams.paging_info.pages)
+			theFilterParams.paging_info.page ++;
+		refresh_member_list();
+	}
+
+	function page_last()
+	{
+		theFilterParams.paging_info.page = theFilterParams.paging_info.pages;
+		refresh_member_list();
+	}
+
+	function page_go(index)
+	{
+		theFilterParams.paging_info.page = index;
+		refresh_member_list();
+	}
+
+	function sort_col(name)
+	{
+		if (theFilterParams.sort_name == name)
+		{
+			theFilterParams.sort = theFilterParams.sort == 'asc' ? 'desc' : 'asc';
+		}
+		else
+		{
+			theFilterParams.sort = 'asc';
+			theFilterParams.sort_name = name;
+		}
+
+		refresh_member_list();
+	}
+
+
+	function refresh_guest_list()
+	{
+		var data = {action:'ajax_get_member_list'};
+		data['sort_name'] = theGuestFilterParams.sort_name;
+		data['sort'] = theGuestFilterParams.sort;
+		data['search_text'] = theGuestFilterParams.search_text;
+		data['page'] = theGuestFilterParams.paging_info.page;
+		data['guest'] = 1;
+		data['t'] = Math.random();
+
+		$.ajax({
+			method: 'POST',
+			url: 'members.php',
+			data: data,
+			dataType: 'json',
+			async: false,
+			success: function(data) {
+				theGuestFilterParams.paging_info = data.paging_info;
+
+				//$('#guests').html(tmpl('tmpl-members-guest-table', {members:data.members, license_using_billing:data.license_using_billing}));
+				app.$data.guest_members = data.members;
+				app.$data.license_using_billing = data.license_using_billing;
+
+				translate_obj($('#guests'));
+				$('ul.guest-pagination').html(tmpl('tmpl-guest-pagination', theGuestFilterParams));
+				$("#total_guest_nums").html('(' + data.paging_info.total_records + ')');
+
+				$.contextMenu({
+					selector: '#guests .memberItem',
+					build: function($trigger, e) {
+						e.preventDefault();
+
+						var member_id = $trigger.data('member_id');
+						var member_account = $trigger.data('member_account');
+						var member_group_id = $trigger.data('member_group_id');
+						var member_is_active = $trigger.data('member_is_active');
+						current_member = {
+							member_id : member_id,
+							member_account : member_account,
+							member_group_id: member_group_id
+						};
+
+						var items = {};
+						items['header'] = { name: member_account, disabled: true, className: 'contextmenu-item-header' };
+
+						if (member_group_id == -1) // MEMBER_GROUP_GUEST
+							items['edit'] = {name: translate_string('Print')};
+
+						if (member_group_id != -3 && member_is_active) // MEMBER_GROUP_POSTPAID
+							items['top_up'] = {name: translate_string('Topup')};
+
+						{/literal}
+							{if $smarty.session.CafeStaffRole == 'admin'}
+							{literal}
+							items['member_delete'] = { name: translate_string('Delete') };
+							{/literal}
+								{/if}
+									{literal}
+
+									items['sep1'] = "----";
+									if (member_is_active)
+										items['add_offer'] = {name: translate_string('Add offer')};
+									items['show_offers'] = {name: translate_string('Show offers')};
+									items['sep2'] = "----";
+									items['event_logs'] = { name: translate_string('Event logs') };
+
+									return {
+										callback: function(key, options) {
+											eval(key + '()');
+										},
+										items: items
+									};
+								}
+							});
+
+				// 查看
+				$(".view-guest").click(function(){
+					var member_id = $(this).nextAll(".member_id").text();
+					var member_group_id = $(this).nextAll(".member_group_id").text();
+					$("#mark tr").remove();
+
+					if (member_group_id == -1)
+						print_guest(member_id);
+				});
+			}
+		})
+	}
+
+
+	function guest_page_first()
+	{
+		theGuestFilterParams.paging_info.page = 1;
+		refresh_guest_list();
+	}
+
+	function guest_page_previous()
+	{
+		if (theGuestFilterParams.paging_info.page > 1)
+			theGuestFilterParams.paging_info.page --;
+		refresh_guest_list();
+	}
+
+	function guest_page_next()
+	{
+		if (theGuestFilterParams.paging_info.page < theGuestFilterParams.paging_info.pages)
+			theGuestFilterParams.paging_info.page ++;
+		refresh_guest_list();
+	}
+
+	function guest_page_last()
+	{
+		theGuestFilterParams.paging_info.page = theGuestFilterParams.paging_info.pages;
+		refresh_guest_list();
+	}
+
+	function guest_page_go(index)
+	{
+		theGuestFilterParams.paging_info.page = index;
+		refresh_guest_list();
+	}
+
+	function guest_sort_col(name)
+	{
+		if (theGuestFilterParams.sort_name == name)
+		{
+			theGuestFilterParams.sort = theGuestFilterParams.sort == 'asc' ? 'desc' : 'asc';
+		}
+		else
+		{
+			theGuestFilterParams.sort = 'asc';
+			theGuestFilterParams.sort_name = name;
+		}
+
+		refresh_guest_list();
+	}
+
+	function search_member_post()
+	{
+		theFilterParams.search_text = $('input[name=search_text]').val();
+		theFilterParams.paging_info.page = 1;
+		refresh_member_list();
+		return false;
+	}
+
+	function search_guest_post()
+	{
+		theGuestFilterParams.search_text = $('input[name=search_guest_text]').val();
+		theGuestFilterParams.paging_info.page = 1;
+		refresh_guest_list();
+		return false;
+	}
+
+	$(function() {
+		$(document).ajaxStart(function() {
+			$("#cover").show();
+		})
+		$(document).ajaxStop(function() {
+			$("#cover").hide();
+		})
+
+		switch_tab('member');
+	})
+
+	$(".add-member").click(function () {
+		$('#member_id').val('-1');
+		$('.myModalViewMember input[name=action]').val('ajax_add_member');
+		$('#member_account').val('');
+		$('#member_password').val('');
+		$('#member_confirm').val('');
+		$('#member_group_name').val('Default');
+		$('#member_first_name').val('');
+		$('#member_last_name').val('');
+		$('#member_birthday').val('0000-00-00');
+		$('#member_expire_time').val('0000-00-00');
+		$('#member_phone').val('');
+		$('#member_email').val('');
+		$('#member_id_card').val('');
+		$('#member_comments').val('');
+		$('#memberAjaxForm input[name=member_balance]').val(0);
+		$('#balance_group').show();
+		$('#member_is_active').val('1');
+		$('#member_is_active').prop('checked', true);
+		$('#member_account').prop('disabled', false);
+
+		$.ajax({
+			type: "POST",
+			url: "members.php?action=ajax_get_member_group",
+			cache: false,
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				app.$data.member_groups = data.member_groups;
+
+				$("#member_id").val(-1);
+				$('.myModalViewMember').modal('show');
+			}
+		})
+	});
+
+	$('#topupAjaxForm input').keyup(function(){
+		var value = parseFloat($('#topupAjaxForm input[name=topup_value]').val()) || 0;
+		var bonus = parseFloat($('#topupAjaxForm input[name=topup_balance_bonus]').val()) || 0;
+		var points = 0;
+		if ($('#topupAjaxForm input[name=add_point]') != undefined)
+			points = $('#topupAjaxForm input[name=add_point]').val();
+
+		$('#submit-topup-member').prop('disabled', (value + bonus + points == 0));
+	});
+
+	$('#submit-topup-member').click(function(){
+		document.getElementById('comment').required = ($('#topup_balance_bonus').val() < 0 || $('#topup_value').val() < 0);
+	});
+
+	function topup_post()
+	{
+		var value = $('#topupAjaxForm input[name=topup_value]').val();
+		var comment = $('#topupAjaxForm input[name=comment]').val();
+
+		document.getElementById('topup_balance_bonus').disabled = false;
+		var formData = $("#topupAjaxForm").serialize();
+		// action: ajax_topup_member
+		$.ajax({
+			type: "POST",
+			url: "members.php",
+			cache: false,
+			data: formData,
+			success: function (data) {
+
+				$('.myModalTopup').modal('hide');
+
+				if (data.result != 1) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1) {
+					var cmd = { action: 'push_clientstatus', member_id: $('#topup_id').val() };
+					wss.send(JSON.stringify(cmd));
+				}
+
+				if ($('#tabs li[class=active]').data('code') == 'guest')
+					refresh_guest_list();
+				else
+					refresh_member_list();
+			}
+		})
+
+		return false;
+	}
+
+	$("#submit-delete-member").click(function () {
+		$('.myModalDelete').modal('hide');
+		var formData = $("#deleteAjaxForm").serialize();
+		$.ajax({
+			type: "POST",
+			url: "members.php",
+			cache: false,
+			data: formData,
+			success: function (data) {
+				if (data.result != 1) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				if (data.result == 1) {
+					var cmd = { action: 'push_clientstatus', member_id: $("#delete_id").val() };
+					wss.send(JSON.stringify(cmd));
+				}
+
+				if ($('#tabs li[class=active]').data('code') == 'guest')
+					refresh_guest_list();
+				else
+					refresh_member_list();
+
+			}
+		})
+
+	})
+
+	function member_post()
+	{
+		var formData = $("#memberAjaxForm").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "members.php",
+			cache: false,
+			data: formData,
+			success: function (data) {
+				if (data.result != 1) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				refresh_member_list();
+				$('.myModalViewMember').modal('hide');
+			}
+		})
+
+		return false;
+	}
+
+	$(".add-guest").click(function() {
+		$('#guestAjaxForm input[name=member_balance]').val('');
+		$('#guestAjaxForm input[name=member_group_name]').val(translate_string('Guest'));
+		$('.myModalGuest').modal('show');
+	});
+
+	function guest_post()
+	{
+		var formData = $("#guestAjaxForm").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "members.php",
+			cache: false,
+			data: formData,
+			success: function (data) {
+				if (data.result != 1) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				$('.myModalGuest').modal('hide');
+				refresh_guest_list();
+
+				print_guest(data.member_id);
+			}
+		})
+
+		return false;
+	}
+
+	$('#member_is_active').click(function () {
+		$('#member_is_active').val($('#member_is_active').is(':checked') ? "1" : "0");
+	})
+
+	$(".myModalTopup").on('shown.bs.modal', function(){
+		document.getElementById('topup_value').focus();
+	});
+
+	$(".myModalAddOffer").on('shown.bs.modal', function(){
+		document.getElementById('offer_paid').focus();
+	});
+
+	$(".myModalGuest").on('shown.bs.modal', function(){
+		document.getElementById('guest_balance').focus();
+	});
+
+	$(".myModalViewMember").on('shown.bs.modal', function(){
+		var nID = $("#member_id").val();
+		if(nID == -1)
+			document.getElementById('member_account').focus();
+		else
+			document.getElementById('member_password').focus();
+	});
+
+	function add_order()
+	{
+		if(current_member == null)
+			return;
+
+		$('#shop_frame').attr('src', '');
+		$('.myModalShop').modal('show');
+		$('.myModalShop h4').html(translate_string('Shop for') + ' ' + current_member.member_account);
+		$('#shop_frame').attr('src', 'shop-client.php?shop_type=web&member_id=' + current_member.member_id + '&t=' + Math.random());
+	}
+
+	// call by shop-client.php
+	function shop_notify(action, pc_name, member_id)
+	{
+		refresh_member_list();
+		$('.myModalShop').modal('hide');
+		wss.send(JSON.stringify({ action: 'push_clientstatus', member_id: member_id }));
+	}
+
+	function edit()
+	{
+		if(current_member == null)
+			return;
+
+		$("#mark tr").remove();
+		if (current_member.member_group_id == -1)
+			print_guest(current_member.member_id);
+		if (current_member.member_group_id != -1)
+			edit_member(current_member.member_id);
+	}
+
+	function top_up()
+	{
+		if(current_member == null)
+			return;
+
+		$("#mark tr").remove();
+
+		$.ajax({
+			type: "POST",
+			url: "members.php?action=ajax_get_member&member_id=" + current_member.member_id,
+			cache: false,
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+
+				$("#topup_account").val(data.member.member_account);
+				$("#topup_balance").val(data.member.member_balance.toString().replace(/\.00/, ''));
+				$("#topup_id").val(current_member.member_id);
+
+				$('#topup_account').prop('disabled', true);
+				$('#topup_balance').prop('disabled', true);
+
+				$('#topupAjaxForm input[name=topup_value]').val('');
+				$('#topupAjaxForm input[name=topup_balance_bonus]').val('');
+				if ($('#topupAjaxForm input[name=add_point]') != undefined)
+					$('#topupAjaxForm input[name=add_point]').val('');
+				$('#topupAjaxForm input[name=comment]').val('');
+				$('#submit-topup-member').prop('disabled', true);
+
+				if (data.member.member_group_id < 0) {
+					if ($('#topup_add_point_div') != undefined)
+						$('#topup_add_point_div').hide();
+					$('#topup-bonus-group').hide();
+				}
+				else {
+					if ($('#topup_add_point_div') != undefined)
+						$('#topup_add_point_div').show();
+					$('#topup-bonus-group').show();
+				}
+
+				$('.myModalTopup').modal('show');
+			}
+		})
+	}
+
+	function member_delete()
+	{
+		if(current_member == null)
+			return;
+
+		$("#mark tr").remove();	// 不删除内容会叠加
+		$("#delete_id").val(current_member.member_id);
+
+		$('.myModalDelete').modal('show');
+	}
+
+	function event_logs()
+	{
+		if(current_member == null)
+			return;
+
+		var url = 'logs.php?search_member=' + current_member.member_account;
+		window.open(url, '_self');
+	}
+
+	$('#topup_value').on('input',function(){
+		$.ajax({
+			type: "POST",
+			url: "members.php",
+			cache: false,
+			data: {action : 'ajax_fetch_bonus', topup : $(this).val()},
+			success: function (data) {
+				if (data.result == 0) {
+					sweetAlert('', translate_string(data.message), 'error');
+					return;
+				}
+				$('#topup_balance_bonus').val(data.member_balance_bonus);
+			}
+		});
+	});
+
+
+
+</script>
+{/literal}
+</body>
+</html>
+
